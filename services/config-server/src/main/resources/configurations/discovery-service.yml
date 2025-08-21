@@ -1,0 +1,10 @@
+eureka:
+    instance:
+        hostname: ${DISCOVERY_SERVER_HOSTNAME}
+    client:
+        register-with-eureka: false
+        fetch-registry: false
+        service-url:
+            defaultZone: ${DISCOVERY_SERVER_EUREKA_DEFAULT_ZONE}
+server:
+    port: ${DISCOVERY_SERVER_PORT}
