@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+    mysql:
+        image: mysql:8.0.33
+        container_name: ms_mysql
+        ports:
+            - "3307:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD --silent"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - microservices-net
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:7.2.15
+        container_name: ms_zookeeper
+        environment:
+            ZOOKEEPER_SERVER_ID: ${ZOOKEEPER_SERVER_ID:-1}
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+        ports:
+            - "22181:2181"
+        networks:
+            - microservices-net
+        healthcheck:
+            test: nc -z localhost 2181 || exit -1
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    kafka:
+        image: confluentinc/cp-kafka:7.2.15
+        container_name: ms_kafka
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+        ports:
+            - "9092:9092"
+        healthcheck:
+            test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        networks:
+            - microservices-net
+
+    mail-dev:
+        container_name: ms_mail_dev
+        image: maildev/maildev
+        ports:
+            - "1080:1080"  # Interfaz web
+            - "1025:1025"  # Puerto SMTP
+        restart: unless-stopped
+        networks:
+            - microservices-net
+
+    zipkin:
+        container_name: ms_zipkin
+        image: openzipkin/zipkin
+        ports:
+            - "9411:9411"
+        restart: unless-stopped
+        networks:
+            - microservices-net
+
+networks:
+    microservices-net:
+        driver: bridge
+
+volumes:
+    mysql_data:
