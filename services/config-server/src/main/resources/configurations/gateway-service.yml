@@ -1,0 +1,15 @@
+spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    discovery:
+                        locator:
+                            enabled: true
+                    routes:
+                        -   id: auth-service
+                            uri: lb:http://AUTH-SERVICE
+                            predicates:
+                                - Path=/api/v1/auth/**
+server:
+    port: ${GATEWAY_SERVER_PORT}
