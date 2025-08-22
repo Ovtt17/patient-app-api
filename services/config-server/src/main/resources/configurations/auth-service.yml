@@ -20,6 +20,8 @@ spring:
         baseline-version: ${FLYWAY_BASELINE_VERSION}
 server:
     port: ${AUTH_SERVER_PORT}
+    servlet:
+        context-path: ${SERVER_CONTEXT_PATH}
 application:
     front-end:
         url: ${FRONT_END_URL}

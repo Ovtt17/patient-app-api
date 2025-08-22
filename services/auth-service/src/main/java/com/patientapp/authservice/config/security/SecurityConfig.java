@@ -1,7 +1,6 @@
 package com.patientapp.authservice.config.security;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,7 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -26,9 +24,7 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final JwtFilter jwtFilter;
     private final AuthenticationEntryPoint authenticationEntryPoint;
-
-    @Value("${application.front-end.domain}")
-    private String frontendDomain;
+    private final CsrfTokenRepository csrfTokenRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,11 +32,18 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(
                         csrf -> csrf
-                                .csrfTokenRepository(this.getCsrfTokenRepository())
+                                .ignoringRequestMatchers(
+                                        "/auth/register",
+                                        "/auth/login",
+                                        "/auth/activate-account",
+                                        "/auth/refresh"
+                                )
+                                .csrfTokenRepository(csrfTokenRepository)
                 )
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(
                                         HttpMethod.POST,
+                                        "/auth/register",
                                         "/auth/login",
                                         "/auth/activate-account",
                                         "/auth/refresh",
@@ -56,10 +59,7 @@ public class SecurityConfig {
                                         "/webjars/**",
                                         "/swagger-ui.html"
                                 ).permitAll()
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/csrf/token"
-                                ).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/csrf/token").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -79,17 +79,5 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    private CsrfTokenRepository getCsrfTokenRepository() {
-        CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        tokenRepository.setCookiePath("/");
-        tokenRepository.setCookieCustomizer(cookie -> {
-            cookie.secure(true);
-            cookie.sameSite("Strict");
-            cookie.path("/");
-            cookie.domain(frontendDomain);
-        });
-        return tokenRepository;
     }
 }
