@@ -1,6 +1,7 @@
 package com.patientapp.authservice.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,11 +11,16 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
 @RequiredArgsConstructor
 public class AuthConfig {
     private final UserDetailsService userDetailsService;
+
+    @Value("${application.front-end.domain}")
+    private String frontendDomain;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -33,4 +39,16 @@ public class AuthConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public CsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        tokenRepository.setCookiePath("/");
+        tokenRepository.setCookieCustomizer(cookie -> {
+            cookie.secure(true);
+            cookie.sameSite("Strict");
+            cookie.path("/");
+            cookie.domain(frontendDomain);
+        });
+        return tokenRepository;
+    }
 }

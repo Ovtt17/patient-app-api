@@ -12,9 +12,20 @@ import java.io.IOException;
 @Component
 public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+            throws IOException, ServletException {
+
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{\"message\": \"Por favor inicia sesión para acceder a este recurso.\"}");
+
+        // Puedes incluir el mensaje de la excepción
+        String json = String.format(
+                "{\"message\": \"%s\", \"error\": \"%s\"}",
+                "Por favor inicia sesión para acceder a este recurso.",
+                authException.getMessage()
+        );
+
+        response.getWriter().write(json);
     }
+
 }

@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseCookie;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,8 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        final String servletPath = request.getServletPath();
-        if (isPublicPath(servletPath)) {
+        if (isPublicPath(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -87,11 +87,17 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isPublicPath(String path) {
-        return path.startsWith("/auth/login") ||
-                path.startsWith("/auth/activate-account") ||
-                path.startsWith("/auth/refresh") ||
-                path.startsWith("/csrf/token")
-                ;
+    private boolean isPublicPath(HttpServletRequest request) {
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        // Permite POST a /auth/register y /auth/login sin token
+        if (HttpMethod.POST.matches(method) &&
+                (path.equals("/auth/register") || path.equals("/auth/login") || path.equals("/auth/activate-account") || path.equals("/auth/refresh"))) {
+            return true;
+        }
+
+        // Permite GET a /csrf/token
+        return HttpMethod.GET.matches(method) && path.equals("/csrf/token");
     }
 }
