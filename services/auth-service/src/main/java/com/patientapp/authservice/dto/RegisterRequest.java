@@ -11,6 +11,14 @@ import lombok.Setter;
 @Setter
 @Builder
 public class RegisterRequest {
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
+    private String firstName;
+
+    @NotBlank(message = "El apellido es obligatorio")
+    @Size(min = 3, max = 100, message = "El apellido debe tener entre 3 y 100 caracteres")
+    private String lastName;
+
     @NotBlank(message = "El nombre de usuario es obligatorio")
     private String username;
 

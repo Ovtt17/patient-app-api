@@ -15,6 +15,7 @@ import com.patientapp.authservice.service.interfaces.JwtService;
 import com.patientapp.authservice.service.interfaces.RoleService;
 import com.patientapp.authservice.service.interfaces.UserService;
 import com.patientapp.authservice.utils.CookieUtil;
+import com.patientapp.authservice.utils.NullSafe;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
@@ -63,9 +64,11 @@ public class AuthServiceImpl implements AuthService {
         var patientRole = roleService.findByNameOrThrow(PACIENTE.name());
 
         var user = User.builder()
-                .username(request.getUsername().trim())
-                .email(request.getEmail().trim())
-                .phone(request.getPhone().trim())
+                .firstName(NullSafe.ifNotBlankOrNull(request.getFirstName()))
+                .lastName(NullSafe.ifNotBlankOrNull(request.getLastName()))
+                .username(NullSafe.ifNotBlankOrNull(request.getUsername()))
+                .email(NullSafe.ifNotBlankOrNull(request.getEmail()))
+                .phone(NullSafe.ifNotBlankOrNull(request.getPhone()))
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enabled(true) // ToDo: set to false for email verification

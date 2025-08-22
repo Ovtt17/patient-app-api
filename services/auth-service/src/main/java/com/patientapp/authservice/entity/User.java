@@ -29,6 +29,11 @@ public class User implements UserDetails, Principal {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false)
+    private String firstName;
+
+    private String lastName;
+
     @Email(message = "Email debe ser válido")
     @Column(unique = true, nullable = false)
     private String email;
