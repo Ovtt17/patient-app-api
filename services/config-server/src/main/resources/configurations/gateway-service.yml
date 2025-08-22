@@ -7,9 +7,22 @@ spring:
                         locator:
                             enabled: true
                     routes:
+                        # Endpoints normales de auth
                         -   id: auth-service
                             uri: lb:http://AUTH-SERVICE
                             predicates:
                                 - Path=/api/v1/auth/**
+
+                        # Inicio de OAuth2
+                        -   id: auth-service-oauth-start
+                            uri: lb:http://AUTH-SERVICE
+                            predicates:
+                                - Path=/api/v1/oauth2/authorization/**
+
+                        # Callback de OAuth2
+                        -   id: auth-service-oauth-callback
+                            uri: lb:http://AUTH-SERVICE
+                            predicates:
+                                - Path=/login/oauth2/code/**
 server:
     port: ${GATEWAY_SERVER_PORT}
