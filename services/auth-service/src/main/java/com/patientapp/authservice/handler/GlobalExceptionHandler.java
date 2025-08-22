@@ -1,0 +1,211 @@
+package com.patientapp.authservice.handler;
+
+import com.patientapp.authservice.handler.exceptions.RoleNotFoundException;
+import com.patientapp.authservice.handler.exceptions.TokenNotFoundException;
+import com.patientapp.authservice.handler.exceptions.UnauthorizedException;
+import com.patientapp.authservice.handler.exceptions.UserNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.patientapp.authservice.handler.BusinessErrorCodes.*;
+import static org.springframework.http.HttpStatus.*;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<ExceptionResponse> handleLockedException(LockedException e) {
+        return ResponseEntity
+                .status(UNAUTHORIZED)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(ACCOUNT_LOCKED.getCode())
+                                .businessErrorDescription(ACCOUNT_LOCKED.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ExceptionResponse> handleDisabledException(DisabledException e) {
+        return ResponseEntity
+                .status(UNAUTHORIZED)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(ACCOUNT_DISABLED.getCode())
+                                .businessErrorDescription(ACCOUNT_DISABLED.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ExceptionResponse> handleBadCredentialsException(BadCredentialsException e) {
+        return ResponseEntity
+                .status(UNAUTHORIZED)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(BAD_CREDENTIALS.getCode())
+                                .businessErrorDescription(BAD_CREDENTIALS.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        Set<String> errors = new HashSet<>();
+        e.getBindingResult()
+                .getAllErrors()
+                .forEach((error) -> {
+                    String errorMessage = error.getDefaultMessage();
+                    errors.add(errorMessage);
+                });
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(
+                        ExceptionResponse.builder()
+                                .validationErrors(errors)
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ExceptionResponse> handleGeneralException(Exception e) {
+        return ResponseEntity
+                .status(INTERNAL_SERVER_ERROR)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorDescription("Ha ocurrido un error inesperado, contacta con el administrador del sistema.")
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ExceptionResponse> handleIllegalStateException(IllegalStateException e) {
+        return ResponseEntity
+                .status(NOT_FOUND)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(NO_CODE.getCode())
+                                .businessErrorDescription(NO_CODE.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ExceptionResponse> handleUnauthorizedException(UnauthorizedException e) {
+        return ResponseEntity
+                .status(USER_UNAUTHORIZED.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(USER_UNAUTHORIZED.getCode())
+                                .businessErrorDescription(USER_UNAUTHORIZED.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<ExceptionResponse> handleUnsupportedOperationException(UnsupportedOperationException e) {
+        return ResponseEntity
+                .status(UNSUPPORTED_AUTHENTICATION.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(UNSUPPORTED_AUTHENTICATION.getCode())
+                                .businessErrorDescription(UNSUPPORTED_AUTHENTICATION.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleRoleNotFoundException(RoleNotFoundException e) {
+        return ResponseEntity
+                .status(ROLE_NOT_FOUND.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(ROLE_NOT_FOUND.getCode())
+                                .businessErrorDescription(ROLE_NOT_FOUND.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(TokenNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleTokenNotFoundException(TokenNotFoundException e) {
+        return ResponseEntity
+                .status(TOKEN_NOT_FOUND.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(TOKEN_NOT_FOUND.getCode())
+                                .businessErrorDescription(TOKEN_NOT_FOUND.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleUserNotFoundException(UserNotFoundException e) {
+        return ResponseEntity
+                .status(USER_NOT_FOUND.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(USER_NOT_FOUND.getCode())
+                                .businessErrorDescription(USER_NOT_FOUND.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(ILLEGAL_ARGUMENT.getCode())
+                                .businessErrorDescription(ILLEGAL_ARGUMENT.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleEntityNotFoundException(EntityNotFoundException e) {
+        return ResponseEntity
+                .status(ENTITY_NOT_FOUND.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(ENTITY_NOT_FOUND.getCode())
+                                .businessErrorDescription(ENTITY_NOT_FOUND.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ExceptionResponse> handleAccessDeniedException() {
+        return ResponseEntity
+                .status(ACCESS_DENIED.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(ACCESS_DENIED.getCode())
+                                .businessErrorDescription(ACCESS_DENIED.getDescription())
+                                .error(ACCESS_DENIED.getDescription())
+                                .build()
+                );
+    }
+
+}
