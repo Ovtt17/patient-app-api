@@ -11,6 +11,7 @@ import com.patientapp.authservice.handler.exceptions.UnauthorizedException;
 import com.patientapp.authservice.mapper.UserMapper;
 import com.patientapp.authservice.repository.TokenRepository;
 import com.patientapp.authservice.service.interfaces.AuthService;
+import com.patientapp.authservice.service.interfaces.JwtService;
 import com.patientapp.authservice.service.interfaces.RoleService;
 import com.patientapp.authservice.service.interfaces.UserService;
 import com.patientapp.authservice.utils.CookieUtil;
@@ -41,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenRepository tokenRepository;
     private final AuthenticationManager authenticationManager;
     private final CookieUtil cookieUtil;
-    private final JwtServiceImpl jwtService;
+    private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final UserMapper userMapper;
     private final UserService userService;
@@ -67,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
                 .phone(request.getPhone().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
-                .enabled(true)
+                .enabled(true) // ToDo: set to false for email verification
                 .provider(AuthProvider.LOCAL)
                 .roles(List.of(patientRole))
                 .build();
