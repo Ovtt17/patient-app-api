@@ -30,7 +30,7 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public Doctor createDoctor(DoctorRequestDTO dto) {
+    public Doctor create(DoctorRequestDTO dto) {
         validateEmail(dto.getEmail());
         validateUserId(dto.getUserId());
         Set<Specialty> specialties = fetchSpecialties(dto.getSpecialtyIds());
@@ -43,7 +43,7 @@ public class DoctorServiceImpl implements DoctorService {
      * {@inheritDoc}
      */
     @Override
-    public List<Doctor> getAllActiveDoctors() {
+    public List<Doctor> getAllActive() {
         return doctorRepository.findByActiveTrue();
     }
 
@@ -51,7 +51,7 @@ public class DoctorServiceImpl implements DoctorService {
      * {@inheritDoc}
      */
     @Override
-    public Doctor getDoctorById(UUID id) {
+    public Doctor getById(UUID id) {
         return doctorRepository.findById(id)
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado"));
     }
@@ -61,8 +61,8 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public Doctor updateDoctor(UUID id, DoctorRequestDTO dto) {
-        Doctor doctor = getDoctorById(id);
+    public Doctor update(UUID id, DoctorRequestDTO dto) {
+        Doctor doctor = getById(id);
 
         doctor.setFirstName(dto.getFirstName());
         doctor.setLastName(dto.getLastName());
@@ -82,8 +82,8 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public void deactivateDoctor(UUID id) {
-        Doctor doctor = getDoctorById(id);
+    public void deactivate(UUID id) {
+        Doctor doctor = getById(id);
         doctor.setActive(false);
         doctorRepository.save(doctor);
     }

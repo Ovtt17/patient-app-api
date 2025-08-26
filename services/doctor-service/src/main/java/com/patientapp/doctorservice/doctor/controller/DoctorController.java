@@ -22,9 +22,9 @@ public class DoctorController {
 
     @Operation(summary = "Crear un nuevo doctor")
     @PostMapping
-    public ResponseEntity<?> createDoctor(@RequestBody DoctorRequestDTO doctorRequestDTO) {
+    public ResponseEntity<?> create(@RequestBody DoctorRequestDTO doctorRequestDTO) {
         try {
-            Doctor doctor = doctorService.createDoctor(doctorRequestDTO);
+            Doctor doctor = doctorService.create(doctorRequestDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(doctor);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -33,18 +33,18 @@ public class DoctorController {
 
     @Operation(summary = "Obtener todos los doctores activos")
     @GetMapping
-    public ResponseEntity<List<Doctor>> getAllActiveDoctors() {
-        List<Doctor> doctors = doctorService.getAllActiveDoctors();
+    public ResponseEntity<List<Doctor>> getAllActive() {
+        List<Doctor> doctors = doctorService.getAllActive();
         return ResponseEntity.ok(doctors);
     }
 
     @Operation(summary = "Obtener un doctor por ID")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getDoctorById(
+    public ResponseEntity<?> getById(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id
     ) {
         try {
-            Doctor doctor = doctorService.getDoctorById(id);
+            Doctor doctor = doctorService.getById(id);
             return ResponseEntity.ok(doctor);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Doctor no encontrado");
@@ -53,12 +53,12 @@ public class DoctorController {
 
     @Operation(summary = "Actualizar información de un doctor")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateDoctor(
+    public ResponseEntity<?> update(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id,
             @RequestBody DoctorRequestDTO doctorRequestDTO
     ) {
         try {
-            Doctor updatedDoctor = doctorService.updateDoctor(id, doctorRequestDTO);
+            Doctor updatedDoctor = doctorService.update(id, doctorRequestDTO);
             return ResponseEntity.ok(updatedDoctor);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -69,11 +69,11 @@ public class DoctorController {
 
     @Operation(summary = "Desactivar un doctor")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deactivateDoctor(
+    public ResponseEntity<?> deactivate(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id
     ) {
         try {
-            doctorService.deactivateDoctor(id);
+            doctorService.deactivate(id);
             return ResponseEntity.ok("Doctor desactivado correctamente");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Doctor no encontrado");
