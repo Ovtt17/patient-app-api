@@ -29,6 +29,12 @@ spring:
                             uri: lb:http://AUTH-SERVICE
                             predicates:
                                 - Path=/login/oauth2/code/**
+
+                        # Endpoints normales de doctor
+                        -   id: doctor-service
+                            uri: lb:http://DOCTOR-SERVICE
+                            predicates:
+                                - Path=/api/v1/doctors/**
 server:
     port: ${GATEWAY_SERVER_PORT}
 
