@@ -1,5 +1,6 @@
 package com.patientapp.doctorservice.doctor.entity;
 
+import com.patientapp.doctorservice.specialty.entity.Specialty;
 import jakarta.persistence.*;
 import lombok.*;
 
