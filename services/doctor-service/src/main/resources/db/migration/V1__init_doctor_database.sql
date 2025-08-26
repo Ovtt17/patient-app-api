@@ -10,7 +10,6 @@ CREATE TABLE doctors
     id              BINARY(16)   NOT NULL,
     first_name      VARCHAR(255) NOT NULL,
     last_name       VARCHAR(255) NOT NULL,
-    specialty       VARCHAR(255) NOT NULL,
     medical_license VARCHAR(255) NOT NULL,
     phone           VARCHAR(15)  NULL,
     email           VARCHAR(255) NOT NULL,

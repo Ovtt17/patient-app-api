@@ -26,9 +26,6 @@ public class Doctor {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
-    private String specialty;
-
     @Column(nullable = false, unique = true)
     private String medicalLicense;
 
