@@ -11,15 +11,15 @@ import java.util.List;
 @Component
 public class DoctorMapper {
 
-    public Doctor toEntity(DoctorRequestDTO dto, List<Specialty> specialties) {
+    public Doctor toEntity(DoctorRequestDTO request, List<Specialty> specialties) {
         Doctor doctor = new Doctor();
-        doctor.setFirstName(dto.getFirstName());
-        doctor.setLastName(dto.getLastName());
-        doctor.setEmail(dto.getEmail());
-        doctor.setPhone(dto.getPhone());
-        doctor.setMedicalLicense(dto.getMedicalLicense());
-        doctor.setOfficeNumber(dto.getOfficeNumber());
-        doctor.setUserId(dto.getUserId());
+        doctor.setFirstName(request.firstName());
+        doctor.setLastName(request.lastName());
+        doctor.setEmail(request.email());
+        doctor.setPhone(request.phone());
+        doctor.setMedicalLicense(request.medicalLicense());
+        doctor.setOfficeNumber(request.officeNumber());
+        doctor.setUserId(request.userId());
         doctor.setSpecialties(new HashSet<>(specialties));
         doctor.setActive(true);
         return doctor;

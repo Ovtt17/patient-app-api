@@ -30,12 +30,12 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public Doctor create(DoctorRequestDTO dto) {
-        validateEmail(dto.getEmail());
-        validateUserId(dto.getUserId());
-        Set<Specialty> specialties = fetchSpecialties(dto.getSpecialtyIds());
+    public Doctor create(DoctorRequestDTO request) {
+        validateEmail(request.email());
+        validateUserId(request.userId());
+        Set<Specialty> specialties = fetchSpecialties(request.specialtyIds());
 
-        Doctor doctor = doctorMapper.toEntity(dto, new ArrayList<>(specialties));
+        Doctor doctor = doctorMapper.toEntity(request, new ArrayList<>(specialties));
         return doctorRepository.save(doctor);
     }
 
@@ -61,17 +61,17 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public Doctor update(UUID id, DoctorRequestDTO dto) {
+    public Doctor update(UUID id, DoctorRequestDTO request) {
         Doctor doctor = getById(id);
 
-        doctor.setFirstName(dto.getFirstName());
-        doctor.setLastName(dto.getLastName());
-        doctor.setEmail(dto.getEmail());
-        doctor.setPhone(dto.getPhone());
-        doctor.setMedicalLicense(dto.getMedicalLicense());
-        doctor.setOfficeNumber(dto.getOfficeNumber());
+        doctor.setFirstName(request.firstName());
+        doctor.setLastName(request.lastName());
+        doctor.setEmail(request.email());
+        doctor.setPhone(request.phone());
+        doctor.setMedicalLicense(request.medicalLicense());
+        doctor.setOfficeNumber(request.officeNumber());
 
-        Set<Specialty> specialties = fetchSpecialties(dto.getSpecialtyIds());
+        Set<Specialty> specialties = fetchSpecialties(request.specialtyIds());
         doctor.setSpecialties(specialties);
 
         return doctorRepository.save(doctor);

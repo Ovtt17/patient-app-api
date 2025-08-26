@@ -22,13 +22,9 @@ public class DoctorController {
 
     @Operation(summary = "Crear un nuevo doctor")
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody DoctorRequestDTO doctorRequestDTO) {
-        try {
-            Doctor doctor = doctorService.create(doctorRequestDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(doctor);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<?> create(@RequestBody DoctorRequestDTO request) {
+        Doctor doctor = doctorService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(doctor);
     }
 
     @Operation(summary = "Obtener todos los doctores activos")
@@ -43,28 +39,18 @@ public class DoctorController {
     public ResponseEntity<?> getById(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id
     ) {
-        try {
-            Doctor doctor = doctorService.getById(id);
-            return ResponseEntity.ok(doctor);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Doctor no encontrado");
-        }
+        Doctor doctor = doctorService.getById(id);
+        return ResponseEntity.ok(doctor);
     }
 
     @Operation(summary = "Actualizar información de un doctor")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id,
-            @RequestBody DoctorRequestDTO doctorRequestDTO
+            @RequestBody DoctorRequestDTO request
     ) {
-        try {
-            Doctor updatedDoctor = doctorService.update(id, doctorRequestDTO);
-            return ResponseEntity.ok(updatedDoctor);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Doctor no encontrado");
-        }
+        Doctor updatedDoctor = doctorService.update(id, request);
+        return ResponseEntity.ok(updatedDoctor);
     }
 
     @Operation(summary = "Desactivar un doctor")
@@ -72,11 +58,7 @@ public class DoctorController {
     public ResponseEntity<?> deactivate(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id
     ) {
-        try {
-            doctorService.deactivate(id);
-            return ResponseEntity.ok("Doctor desactivado correctamente");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Doctor no encontrado");
-        }
+        doctorService.deactivate(id);
+        return ResponseEntity.ok("Doctor desactivado correctamente");
     }
 }

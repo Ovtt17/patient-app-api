@@ -14,14 +14,14 @@ public interface DoctorService {
     /**
      * Creates a new doctor with the provided information and specialties.
      *
-     * @param dto DoctorRequestDTO containing doctor's firstName, lastName, email, phone,
+     * @param request DoctorRequestDTO containing doctor's firstName, lastName, email, phone,
      *            medicalLicense, officeNumber, userId, and specialtyIds
      * @return The created Doctor entity
      * @throws DoctorAlreadyExistsException if a doctor with the same email or userId already exists
      * @throws DoctorAlreadyExistsException if a doctor with the same email or userId already exists
      * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    Doctor create(DoctorRequestDTO dto);
+    Doctor create(DoctorRequestDTO request);
 
     /**
      * Retrieves all active doctors.
@@ -43,12 +43,12 @@ public interface DoctorService {
      * Updates the information and specialties of an existing doctor.
      *
      * @param id  UUID of the doctor to update
-     * @param dto DoctorRequestDTO containing the updated information and specialtyIds
+     * @param request DoctorRequestDTO containing the updated information and specialtyIds
      * @return The updated Doctor entity
      * @throws DoctorNotFoundException if the doctor does not exist
      * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    Doctor update(UUID id, DoctorRequestDTO dto);
+    Doctor update(UUID id, DoctorRequestDTO request);
 
     /**
      * Deactivates a doctor instead of deleting them from the database.

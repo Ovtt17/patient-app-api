@@ -25,15 +25,16 @@ class DoctorMapperTest {
     void should_map_doctor_request_to_entity() {
         // Arrange
         UUID userId = UUID.randomUUID();
-        DoctorRequestDTO dto = new DoctorRequestDTO();
-        dto.setFirstName("Juan");
-        dto.setLastName("Pérez");
-        dto.setEmail("juan@example.com");
-        dto.setPhone("555-1234");
-        dto.setMedicalLicense("LIC12345");
-        dto.setOfficeNumber("101");
-        dto.setUserId(userId);
-        dto.setSpecialtyIds(Set.of(1, 2));
+        DoctorRequestDTO dto = new DoctorRequestDTO(
+                "Juan",
+                "Pérez",
+                "juan@example.com",
+                "87227697",
+                "LIC12345",
+                "101",
+                Set.of(1, 2),
+                userId
+        );
 
         Specialty specialty1 = new Specialty();
         specialty1.setId(1);
@@ -50,12 +51,12 @@ class DoctorMapperTest {
 
         // Assert
         assertNotNull(doctor);
-        assertEquals(dto.getFirstName(), doctor.getFirstName());
-        assertEquals(dto.getLastName(), doctor.getLastName());
-        assertEquals(dto.getEmail(), doctor.getEmail());
-        assertEquals(dto.getPhone(), doctor.getPhone());
-        assertEquals(dto.getMedicalLicense(), doctor.getMedicalLicense());
-        assertEquals(dto.getOfficeNumber(), doctor.getOfficeNumber());
+        assertEquals(dto.firstName(), doctor.getFirstName());
+        assertEquals(dto.lastName(), doctor.getLastName());
+        assertEquals(dto.email(), doctor.getEmail());
+        assertEquals(dto.phone(), doctor.getPhone());
+        assertEquals(dto.medicalLicense(), doctor.getMedicalLicense());
+        assertEquals(dto.officeNumber(), doctor.getOfficeNumber());
         assertEquals(userId, doctor.getUserId());
         assertTrue(doctor.isActive());
         assertEquals(specialties.size(), doctor.getSpecialties().size());
