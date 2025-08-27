@@ -3,7 +3,7 @@ version: '3.9'
 services:
     mysql:
         image: mysql:8.0.33
-        container_name: ms_mysql
+        container_name: ms_mysftf
         ports:
             - "3307:3306"
         environment:
