@@ -1,15 +1,16 @@
 package com.patientapp.doctorservice.doctor.service.impl;
 
-import com.patientapp.doctorservice.doctor.dto.DoctorRequestDTO;
-import com.patientapp.doctorservice.doctor.dto.DoctorResponseDTO;
-import com.patientapp.doctorservice.doctor.entity.Doctor;
-import com.patientapp.doctorservice.doctor.mapper.DoctorMapper;
-import com.patientapp.doctorservice.doctor.repository.DoctorRepository;
-import com.patientapp.doctorservice.handler.exceptions.DoctorNotFoundException;
-import com.patientapp.doctorservice.handler.exceptions.EmailAlreadyInUseException;
-import com.patientapp.doctorservice.handler.exceptions.SpecialtyNotFoundException;
-import com.patientapp.doctorservice.specialty.entity.Specialty;
-import com.patientapp.doctorservice.specialty.repository.SpecialtyRepository;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
+import com.patientapp.doctorservice.modules.doctor.mapper.DoctorMapper;
+import com.patientapp.doctorservice.modules.doctor.repository.DoctorRepository;
+import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
+import com.patientapp.doctorservice.common.handler.exceptions.EmailAlreadyInUseException;
+import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
+import com.patientapp.doctorservice.modules.doctor.service.impl.DoctorServiceImpl;
+import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
+import com.patientapp.doctorservice.modules.specialty.repository.SpecialtyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

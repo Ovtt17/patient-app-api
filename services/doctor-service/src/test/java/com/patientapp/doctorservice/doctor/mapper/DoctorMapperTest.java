@@ -1,9 +1,10 @@
 package com.patientapp.doctorservice.doctor.mapper;
 
-import com.patientapp.doctorservice.doctor.dto.DoctorRequestDTO;
-import com.patientapp.doctorservice.doctor.dto.DoctorResponseDTO;
-import com.patientapp.doctorservice.doctor.entity.Doctor;
-import com.patientapp.doctorservice.specialty.entity.Specialty;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
+import com.patientapp.doctorservice.modules.doctor.mapper.DoctorMapper;
+import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
