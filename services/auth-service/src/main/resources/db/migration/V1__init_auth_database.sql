@@ -33,9 +33,12 @@ CREATE TABLE tokens
 CREATE TABLE users
 (
     id                 BINARY(16)   NOT NULL,
+    first_name         VARCHAR(255) NOT NULL,
+    last_name          VARCHAR(255) NULL,
     email              VARCHAR(255) NOT NULL,
     username           VARCHAR(255) NOT NULL,
     password           VARCHAR(255) NULL,
+    temporary_password VARCHAR(255) NULL,
     provider           VARCHAR(255) NOT NULL,
     phone              VARCHAR(15)  NULL,
     profile_picture    TEXT         NULL,
