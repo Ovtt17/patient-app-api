@@ -22,3 +22,8 @@ server:
     port: ${DOCTOR_SERVER_PORT}
     servlet:
         context-path: ${SERVER_CONTEXT_PATH}
+
+application:
+    security:
+        jwt:
+            secret-key: ${JWT_SECRET_KEY}
