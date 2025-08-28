@@ -1,7 +1,7 @@
 package com.patientapp.authservice.config.oauth2;
 
-import com.patientapp.authservice.entity.User;
-import com.patientapp.authservice.utils.CookieUtil;
+import com.patientapp.authservice.modules.user.entity.User;
+import com.patientapp.authservice.common.handler.utils.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

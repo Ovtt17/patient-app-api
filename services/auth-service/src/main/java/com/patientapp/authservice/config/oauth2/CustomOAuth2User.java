@@ -1,6 +1,6 @@
 package com.patientapp.authservice.config.oauth2;
 
-import com.patientapp.authservice.entity.User;
+import com.patientapp.authservice.modules.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 

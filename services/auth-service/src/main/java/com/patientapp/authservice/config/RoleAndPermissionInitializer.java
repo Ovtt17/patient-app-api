@@ -1,10 +1,10 @@
 package com.patientapp.authservice.config;
 
-import com.patientapp.authservice.entity.Permission;
-import com.patientapp.authservice.entity.Role;
-import com.patientapp.authservice.enums.Permissions;
-import com.patientapp.authservice.repository.PermissionRepository;
-import com.patientapp.authservice.repository.RoleRepository;
+import com.patientapp.authservice.modules.role.entity.Permission;
+import com.patientapp.authservice.modules.role.entity.Role;
+import com.patientapp.authservice.modules.role.enums.Permissions;
+import com.patientapp.authservice.modules.role.repository.PermissionRepository;
+import com.patientapp.authservice.modules.role.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.patientapp.authservice.enums.Roles.*;
+import static com.patientapp.authservice.modules.role.enums.Roles.*;
 
 
 @Configuration

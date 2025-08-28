@@ -1,9 +1,9 @@
 package com.patientapp.authservice.config.oauth2;
 
-import com.patientapp.authservice.entity.User;
-import com.patientapp.authservice.enums.AuthProvider;
-import com.patientapp.authservice.repository.RoleRepository;
-import com.patientapp.authservice.repository.UserRepository;
+import com.patientapp.authservice.modules.user.entity.User;
+import com.patientapp.authservice.modules.user.enums.AuthProvider;
+import com.patientapp.authservice.modules.role.repository.RoleRepository;
+import com.patientapp.authservice.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
-import static com.patientapp.authservice.enums.Roles.PACIENTE;
+import static com.patientapp.authservice.modules.role.enums.Roles.PACIENTE;
 
 @Service
 @RequiredArgsConstructor
