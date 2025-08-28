@@ -1,5 +1,8 @@
 package com.patientapp.authservice.service.impl;
 
+import com.patientapp.authservice.doctor.client.DoctorClient;
+import com.patientapp.authservice.doctor.dto.DoctorCreatedDTO;
+import com.patientapp.authservice.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.dto.LoginRequest;
 import com.patientapp.authservice.dto.RegisterRequest;
 import com.patientapp.authservice.dto.UserResponseDTO;
@@ -17,6 +20,7 @@ import com.patientapp.authservice.service.interfaces.UserService;
 import com.patientapp.authservice.utils.CookieUtil;
 import com.patientapp.authservice.utils.NullSafe;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,7 +35,9 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import static com.patientapp.authservice.enums.Roles.DOCTOR;
 import static com.patientapp.authservice.enums.Roles.PACIENTE;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
@@ -47,29 +53,23 @@ public class AuthServiceImpl implements AuthService {
     private final UserDetailsService userDetailsService;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final DoctorClient doctorClient;
 
     @Override
+    @Transactional
     public String register(RegisterRequest request) {
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden.");
-        }
-
-        boolean userExists = userService.existsByEmail(request.getEmail())
-                || userService.existsByUsername(request.getUsername());
-
-        if (userExists) {
-            throw new IllegalArgumentException("El usuario ya existe con el correo electrónico o nombre de usuario proporcionado.");
-        }
+        verifyIfPasswordsMatch(request.password(), request.confirmPassword());
+        verifyIfUserExists(request.email(), request.username());
 
         var patientRole = roleService.findByNameOrThrow(PACIENTE.name());
 
         var user = User.builder()
-                .firstName(NullSafe.ifNotBlankOrNull(request.getFirstName()))
-                .lastName(NullSafe.ifNotBlankOrNull(request.getLastName()))
-                .username(NullSafe.ifNotBlankOrNull(request.getUsername()))
-                .email(NullSafe.ifNotBlankOrNull(request.getEmail()))
-                .phone(NullSafe.ifNotBlankOrNull(request.getPhone()))
-                .password(passwordEncoder.encode(request.getPassword()))
+                .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
+                .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
+                .username(NullSafe.ifNotBlankOrNull(request.username()))
+                .email(NullSafe.ifNotBlankOrNull(request.email()))
+                .phone(NullSafe.ifNotBlankOrNull(request.phone()))
+                .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
                 .enabled(true) // ToDo: set to false for email verification
                 .provider(AuthProvider.LOCAL)
@@ -82,6 +82,39 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
+    public DoctorCreatedDTO registerDoctor(DoctorRequestDTO request) {
+        verifyIfUserExists(request.email(), request.email());
+
+        String tempPassword = generateTemporaryPassword();
+        String passwordEncoded = passwordEncoder.encode(tempPassword);
+
+        var doctorRole = roleService.findByNameOrThrow(DOCTOR.name());
+
+        var user = User.builder()
+                .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
+                .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
+                .username(NullSafe.ifNotBlankOrNull(request.username()))
+                .email(NullSafe.ifNotBlankOrNull(request.email()))
+                .phone(NullSafe.ifNotBlankOrNull(request.phone()))
+                .accountLocked(false)
+                .enabled(true) // enabled true because doctor will change the password at first login
+                .password(passwordEncoded)
+                .temporaryPassword(passwordEncoded)
+                .roles(List.of(doctorRole))
+                .provider(AuthProvider.LOCAL)
+                .build();
+
+        var userSaved = userService.save(user);
+
+        DoctorRequestDTO doctorRequest = userMapper.toDoctorRequestDTO(userSaved);
+        doctorClient.create(doctorRequest);
+        // ToDo: send tempPassword via email
+        return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
+    }
+
+    @Override
+    @Transactional
     public String activateAccount(String token) {
         Token activationToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new TokenNotFoundException("Token no encontrado."));
@@ -180,4 +213,42 @@ public class AuthServiceImpl implements AuthService {
         }
         return codeBuilder.toString();
     }
+
+    /**
+     * Generates a secure temporary password.
+     * @return A temporary password string of 8 characters.
+     */
+    private String generateTemporaryPassword() {
+        // 🔹 Genera una contraseña de 10 caracteres segura
+        return UUID.randomUUID().toString()
+                .replace("-", "")
+                .substring(0, 8);
+    }
+
+
+    /**
+     * Verifies if the provided passwords match.
+     * @param password the password
+     * @param confirmPassword the confirmation password
+     */
+    private void verifyIfPasswordsMatch(String password, String confirmPassword) {
+        if (!password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden.");
+        }
+    }
+
+    /**
+     * Verifies if a user already exists with the given email or username.
+     * @param email the email
+     * @param username the username
+     */
+    private void verifyIfUserExists(String email, String username) {
+        boolean userExists = userService.existsByEmail(email)
+                || userService.existsByUsername(username);
+
+        if (userExists) {
+            throw new IllegalArgumentException("El usuario ya existe con el correo electrónico o nombre de usuario proporcionado.");
+        }
+    }
+
 }

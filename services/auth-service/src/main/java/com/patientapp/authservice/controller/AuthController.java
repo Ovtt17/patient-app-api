@@ -36,6 +36,19 @@ public class AuthController {
     }
 
     /**
+     * Registers a new doctor in the system and generates a user with DOCTOR role and a temporary password.
+     * @param request The doctor registration request containing doctor details.
+     * @return The created doctor's details including temporary password.
+     */
+    @Operation(summary = "Registrar nuevo doctor", description = "Registra un nuevo doctor en el sistema. Se genera un usuario con rol DOCTOR y una contraseña temporal.")
+    @PostMapping("/register-doctor")
+    public ResponseEntity<DoctorCreatedDTO> registerDoctor(
+            @RequestBody @Valid final DoctorRequestDTO request
+    ) {
+        return ResponseEntity.ok(authService.registerDoctor(request));
+    }
+
+    /**
      * Activates a user account using the provided activation token.
      * @param token The activation token sent to the user's email.
      * @return A message indicating successful account activation.
