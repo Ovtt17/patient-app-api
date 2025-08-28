@@ -34,7 +34,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -155,11 +154,6 @@ public class AuthServiceImpl implements AuthService {
 
         // Logout the user to force re-login with new password
         cookieUtil.clearAuthCookies(response);
-        try {
-            response.sendRedirect(frontendUrl + "/login?passwordChanged=true");
-        } catch (IOException e) {
-            throw new RuntimeException("Error al redirigir después de cambiar la contraseña.");
-        }
     }
 
     /** {@inheritDoc} */
@@ -228,11 +222,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String logout(HttpServletResponse response) {
         cookieUtil.clearAuthCookies(response);
-        try {
-            response.sendRedirect(frontendUrl + "/login?logout=true");
-        } catch (IOException e) {
-            throw new RuntimeException("Error al redirigir después de cerrar la sesión.");
-        }
         return "Se ha cerrado la sesión correctamente.";
     }
 
