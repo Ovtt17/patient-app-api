@@ -43,11 +43,12 @@ public interface AuthService {
     /**
      * Changes the password for the currently authenticated user.
      *
-     * @param request the change password request containing old and new passwords
-     * @throws UnauthorizedException if the user is not authenticated
+     * @param request  the change password request containing old and new passwords
+     * @param response the HTTP response where auth cookies may be updated
+     * @throws UnauthorizedException    if the user is not authenticated
      * @throws IllegalArgumentException if the old password is incorrect or new passwords do not match
      */
-    void changePassword(ChangePasswordRequest request);
+    void changePassword(ChangePasswordRequest request, HttpServletResponse response);
 
 
     /**
@@ -56,7 +57,7 @@ public interface AuthService {
      * @param token the activation token
      * @return a success message if the account is activated
      * @throws TokenNotFoundException if the token does not exist
-     * @throws RuntimeException if the token is expired
+     * @throws RuntimeException       if the token is expired
      */
     String activateAccount(String token);
 
@@ -66,7 +67,7 @@ public interface AuthService {
      * @param request  the login credentials
      * @param response the HTTP response where auth cookies will be set
      * @return the authenticated user information
-     * @throws UnauthorizedException if credentials are invalid
+     * @throws UnauthorizedException       if credentials are invalid
      * @throws MustChangePasswordException if the user must change their password
      */
     UserResponseDTO login(LoginRequest request, HttpServletResponse response);

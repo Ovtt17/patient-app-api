@@ -10,7 +10,6 @@ import com.patientapp.authservice.dto.UserResponseDTO;
 import com.patientapp.authservice.entity.Token;
 import com.patientapp.authservice.entity.User;
 import com.patientapp.authservice.enums.AuthProvider;
-import com.patientapp.authservice.handler.exceptions.MustChangePasswordException;
 import com.patientapp.authservice.handler.exceptions.TokenNotFoundException;
 import com.patientapp.authservice.handler.exceptions.UnauthorizedException;
 import com.patientapp.authservice.mapper.UserMapper;
@@ -25,6 +24,7 @@ import com.patientapp.authservice.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +34,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -61,6 +62,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final UserService userService;
     private final DoctorClient doctorClient;
+
+    @Value("${application.front-end.url}")
+    private String frontendUrl;
 
     /** {@inheritDoc} */
     @Override
@@ -97,7 +101,6 @@ public class AuthServiceImpl implements AuthService {
         verifyIfUserExists(request.email(), request.email());
 
         String tempPassword = generateTemporaryPassword();
-        String passwordEncoded = passwordEncoder.encode(tempPassword);
 
         var doctorRole = roleService.findByNameOrThrow(DOCTOR.name());
 
@@ -109,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
                 .accountLocked(false)
                 .enabled(true) // enabled true because doctor will change the password at first login
-                .password(passwordEncoded)
+                .password(passwordEncoder.encode(tempPassword))
                 .mustChangePassword(true) // force to change password at first login
                 .roles(List.of(doctorRole))
                 .provider(AuthProvider.LOCAL)
@@ -125,7 +128,7 @@ public class AuthServiceImpl implements AuthService {
 
     /** {@inheritDoc} */
     @Override
-    public void changePassword(ChangePasswordRequest request) {
+    public void changePassword(ChangePasswordRequest request, HttpServletResponse response) {
         String email = SecurityUtil.getAuthenticatedEmail()
                 .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado."));
 
@@ -149,6 +152,14 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         user.setMustChangePassword(false);
         userService.save(user);
+
+        // Logout the user to force re-login with new password
+        cookieUtil.clearAuthCookies(response);
+        try {
+            response.sendRedirect(frontendUrl + "/login?passwordChanged=true");
+        } catch (IOException e) {
+            throw new RuntimeException("Error al redirigir después de cambiar la contraseña.");
+        }
     }
 
     /** {@inheritDoc} */
@@ -186,10 +197,6 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("El nombre de usuario o la contraseña son incorrectos.");
         }
 
-        if (user.isMustChangePassword()) {
-            throw new MustChangePasswordException("El usuario debe cambiar la contraseña.");
-        }
-
         user = (User) auth.getPrincipal();
         cookieUtil.setAuthCookies(user, response);
 
@@ -221,6 +228,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String logout(HttpServletResponse response) {
         cookieUtil.clearAuthCookies(response);
+        try {
+            response.sendRedirect(frontendUrl + "/login?logout=true");
+        } catch (IOException e) {
+            throw new RuntimeException("Error al redirigir después de cerrar la sesión.");
+        }
         return "Se ha cerrado la sesión correctamente.";
     }
 

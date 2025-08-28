@@ -52,8 +52,11 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        authService.changePassword(request);
+    public ResponseEntity<String> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpServletResponse response
+    ) {
+        authService.changePassword(request, response);
         return ResponseEntity.ok("Contraseña cambiada exitosamente.");
     }
 
