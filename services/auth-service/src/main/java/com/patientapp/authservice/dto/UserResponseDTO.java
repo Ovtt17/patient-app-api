@@ -12,5 +12,6 @@ public record UserResponseDTO(
         String email,
         String phone,
         String profilePictureUrl,
-        List<String> roles
+        List<String> roles,
+        boolean mustChangePassword
 ) {}

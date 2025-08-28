@@ -25,6 +25,7 @@ public class UserMapper {
                 .roles(user.getRoles().stream()
                         .map(Role::getName)
                         .toList())
+                .mustChangePassword(user.isMustChangePassword())
                 .build();
     }
 
