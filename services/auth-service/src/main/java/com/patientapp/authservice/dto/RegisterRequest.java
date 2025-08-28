@@ -2,40 +2,45 @@ package com.patientapp.authservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 @Builder
-public class RegisterRequest {
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
-    private String firstName;
+public record RegisterRequest(
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
+        String firstName,
 
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(min = 3, max = 100, message = "El apellido debe tener entre 3 y 100 caracteres")
-    private String lastName;
+        @NotBlank(message = "El apellido es obligatorio")
+        @Size(min = 3, max = 100, message = "El apellido debe tener entre 3 y 100 caracteres")
+        String lastName,
 
-    @NotBlank(message = "El nombre de usuario es obligatorio")
-    private String username;
+        @Size(
+                min = 3,
+                max = 30,
+                message = "El nombre de usuario debe tener entre 3 y 30 caracteres."
+        )
+        String username,
 
-    @Email (message = "El email no es válido")
-    @NotBlank(message = "El email es obligatorio")
-    private String email;
+        @Email(message = "El email no es válido")
+        @NotBlank(message = "El email es obligatorio")
+        String email,
 
-    @NotBlank(message = "El número de teléfono es obligatorio")
-    @Size(max = 8, message = "El número de teléfono no debe exceder los 8 caracteres")
-    private String phone;
+        @NotBlank(message = "El número de teléfono es obligatorio")
+        @Pattern(
+                regexp = "^\\d{1,8}$",
+                message = "El número de teléfono debe tener hasta 8 dígitos."
+        )
+        String phone,
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
-    private String password;
+        @NotBlank(message = "La contraseña es obligatoria")
+        @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+        String password,
 
-    @NotBlank(message = "La confirmación de la contraseña es obligatoria")
-    @Size(min = 8, message = "La confirmación de la contraseña debe tener al menos 8 caracteres")
-    private String confirmPassword;
+        @NotBlank(message = "La confirmación de la contraseña es obligatoria")
+        @Size(min = 8, message = "La confirmación de la contraseña debe tener al menos 8 caracteres")
+        String confirmPassword
+) {
 }
 

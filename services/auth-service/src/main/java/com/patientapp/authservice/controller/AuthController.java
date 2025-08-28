@@ -1,5 +1,7 @@
 package com.patientapp.authservice.controller;
 
+import com.patientapp.authservice.doctor.dto.DoctorCreatedDTO;
+import com.patientapp.authservice.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.dto.LoginRequest;
 import com.patientapp.authservice.dto.RegisterRequest;
 import com.patientapp.authservice.dto.UserResponseDTO;
@@ -24,7 +26,7 @@ public class AuthController {
      * @param request The registration request containing user details.
      * @return A message indicating successful registration.
      */
-    @Operation(summary = "Register a new user", description = "Registers a new user with the provided details.")
+    @Operation(summary = "Registrar nuevo usuario", description = "Registra un nuevo usuario con los detalles proporcionados.")
     @PostMapping("/register")
     public ResponseEntity<String> register(
             @RequestBody @Valid final RegisterRequest request

@@ -44,6 +44,9 @@ public class User implements UserDetails, Principal {
     @Column
     private String password;
 
+    @Column
+    private String temporaryPassword;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider provider;
