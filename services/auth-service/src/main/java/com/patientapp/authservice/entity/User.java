@@ -44,8 +44,8 @@ public class User implements UserDetails, Principal {
     @Column
     private String password;
 
-    @Column
-    private String temporaryPassword;
+    @Column(nullable = false)
+    private boolean mustChangePassword = false;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
