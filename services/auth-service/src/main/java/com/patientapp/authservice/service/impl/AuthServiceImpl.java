@@ -41,6 +41,10 @@ import static com.patientapp.authservice.enums.Roles.DOCTOR;
 import static com.patientapp.authservice.enums.Roles.PACIENTE;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
+/**
+ * Default service implementation for authentication and user session operations.
+ * Implements {@link com.patientapp.authservice.service.interfaces.AuthService}.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -55,6 +59,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final DoctorClient doctorClient;
 
+    /** {@inheritDoc} */
     @Override
     @Transactional
     public String register(RegisterRequest request) {
@@ -81,6 +86,7 @@ public class AuthServiceImpl implements AuthService {
         return "Usuario registrado con éxito.";
     }
 
+    /** {@inheritDoc} */
     @Override
     @Transactional
     public DoctorCreatedDTO registerDoctor(DoctorRequestDTO request) {
@@ -113,6 +119,7 @@ public class AuthServiceImpl implements AuthService {
         return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
     }
 
+    /** {@inheritDoc} */
     @Override
     @Transactional
     public String activateAccount(String token) {
@@ -130,6 +137,7 @@ public class AuthServiceImpl implements AuthService {
         return "Cuenta activada con éxito.";
     }
 
+    /** {@inheritDoc} */
     @Override
     public UserResponseDTO login(LoginRequest request, HttpServletResponse response) {
         User user = userService.findByUsernameOrEmailOrThrow(request.getUsername(), request.getUsername());
@@ -152,6 +160,7 @@ public class AuthServiceImpl implements AuthService {
         return userMapper.toUserResponseDTO(user);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -172,12 +181,14 @@ public class AuthServiceImpl implements AuthService {
         return "Token de acceso actualizado.";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String logout(HttpServletResponse response) {
         cookieUtil.clearAuthCookies(response);
         return "Se ha cerrado la sesión correctamente.";
     }
 
+    /** {@inheritDoc} */
     @Override
     public UserResponseDTO getCurrentUser(String accessToken, String refreshToken, HttpServletResponse response) {
         if (accessToken == null || accessToken.isBlank()) {
