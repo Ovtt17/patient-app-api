@@ -1,9 +1,6 @@
 package com.patientapp.authservice.handler;
 
-import com.patientapp.authservice.handler.exceptions.RoleNotFoundException;
-import com.patientapp.authservice.handler.exceptions.TokenNotFoundException;
-import com.patientapp.authservice.handler.exceptions.UnauthorizedException;
-import com.patientapp.authservice.handler.exceptions.UserNotFoundException;
+import com.patientapp.authservice.handler.exceptions.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -204,6 +201,19 @@ public class GlobalExceptionHandler {
                                 .businessErrorCode(ACCESS_DENIED.getCode())
                                 .businessErrorDescription(ACCESS_DENIED.getDescription())
                                 .error(ACCESS_DENIED.getDescription())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(MustChangePasswordException.class)
+    public ResponseEntity<ExceptionResponse> handleMustChangePasswordException(MustChangePasswordException e) {
+        return ResponseEntity
+                .status(MUST_CHANGE_PASSWORD.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(MUST_CHANGE_PASSWORD.getCode())
+                                .businessErrorDescription(MUST_CHANGE_PASSWORD.getDescription())
+                                .error(e.getMessage())
                                 .build()
                 );
     }

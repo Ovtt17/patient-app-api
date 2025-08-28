@@ -1,5 +1,9 @@
 package com.patientapp.authservice.service.impl;
 
+import com.patientapp.authservice.doctor.client.DoctorClient;
+import com.patientapp.authservice.doctor.dto.DoctorCreatedDTO;
+import com.patientapp.authservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.dto.ChangePasswordRequest;
 import com.patientapp.authservice.dto.LoginRequest;
 import com.patientapp.authservice.dto.RegisterRequest;
 import com.patientapp.authservice.dto.UserResponseDTO;
@@ -16,8 +20,11 @@ import com.patientapp.authservice.service.interfaces.RoleService;
 import com.patientapp.authservice.service.interfaces.UserService;
 import com.patientapp.authservice.utils.CookieUtil;
 import com.patientapp.authservice.utils.NullSafe;
+import com.patientapp.authservice.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,14 +34,21 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import static com.patientapp.authservice.enums.Roles.DOCTOR;
 import static com.patientapp.authservice.enums.Roles.PACIENTE;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
+/**
+ * Default service implementation for authentication and user session operations.
+ * Implements {@link com.patientapp.authservice.service.interfaces.AuthService}.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -47,31 +61,30 @@ public class AuthServiceImpl implements AuthService {
     private final UserDetailsService userDetailsService;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final DoctorClient doctorClient;
 
+    @Value("${application.front-end.url}")
+    private String frontendUrl;
+
+    /** {@inheritDoc} */
     @Override
+    @Transactional
     public String register(RegisterRequest request) {
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden.");
-        }
-
-        boolean userExists = userService.existsByEmail(request.getEmail())
-                || userService.existsByUsername(request.getUsername());
-
-        if (userExists) {
-            throw new IllegalArgumentException("El usuario ya existe con el correo electrónico o nombre de usuario proporcionado.");
-        }
+        verifyPasswordComparison(request.password(), request.confirmPassword());
+        verifyIfUserExists(request.email(), request.username());
 
         var patientRole = roleService.findByNameOrThrow(PACIENTE.name());
 
         var user = User.builder()
-                .firstName(NullSafe.ifNotBlankOrNull(request.getFirstName()))
-                .lastName(NullSafe.ifNotBlankOrNull(request.getLastName()))
-                .username(NullSafe.ifNotBlankOrNull(request.getUsername()))
-                .email(NullSafe.ifNotBlankOrNull(request.getEmail()))
-                .phone(NullSafe.ifNotBlankOrNull(request.getPhone()))
-                .password(passwordEncoder.encode(request.getPassword()))
+                .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
+                .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
+                .username(NullSafe.ifNotBlankOrNull(request.username()))
+                .email(NullSafe.ifNotBlankOrNull(request.email()))
+                .phone(NullSafe.ifNotBlankOrNull(request.phone()))
+                .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
                 .enabled(true) // ToDo: set to false for email verification
+                .mustChangePassword(false)
                 .provider(AuthProvider.LOCAL)
                 .roles(List.of(patientRole))
                 .build();
@@ -81,7 +94,77 @@ public class AuthServiceImpl implements AuthService {
         return "Usuario registrado con éxito.";
     }
 
+    /** {@inheritDoc} */
     @Override
+    @Transactional
+    public DoctorCreatedDTO registerDoctor(DoctorRequestDTO request) {
+        verifyIfUserExists(request.email(), request.email());
+
+        String tempPassword = generateTemporaryPassword();
+
+        var doctorRole = roleService.findByNameOrThrow(DOCTOR.name());
+
+        var user = User.builder()
+                .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
+                .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
+                .username(NullSafe.ifNotBlankOrNull(request.username()))
+                .email(NullSafe.ifNotBlankOrNull(request.email()))
+                .phone(NullSafe.ifNotBlankOrNull(request.phone()))
+                .accountLocked(false)
+                .enabled(true) // enabled true because doctor will change the password at first login
+                .password(passwordEncoder.encode(tempPassword))
+                .mustChangePassword(true) // force to change password at first login
+                .roles(List.of(doctorRole))
+                .provider(AuthProvider.LOCAL)
+                .build();
+
+        var userSaved = userService.save(user);
+
+        DoctorRequestDTO doctorRequest = userMapper.toDoctorRequestDTO(userSaved);
+        doctorClient.create(doctorRequest);
+        // ToDo: send tempPassword via email
+        return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void changePassword(ChangePasswordRequest request, HttpServletResponse response) {
+        String email = SecurityUtil.getAuthenticatedEmail()
+                .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado."));
+
+        User user = userService.findByEmailOrThrow(email);
+
+        // Verify old password matches the current password in DB
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("La contraseña antigua es incorrecta.");
+        }
+
+        // Verify new password and confirmation match each other
+        verifyPasswordComparison(request.newPassword(), request.confirmNewPassword());
+        // Verify new password is different from old password
+        boolean shouldMathOldAndNewPassword = false;
+        verifyPasswordComparison(
+                request.oldPassword(),
+                request.newPassword(),
+                shouldMathOldAndNewPassword
+        );
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setMustChangePassword(false);
+        userService.save(user);
+
+        // Logout the user to force re-login with new password
+        cookieUtil.clearAuthCookies(response);
+        try {
+            response.sendRedirect(frontendUrl + "/login?passwordChanged=true");
+        } catch (IOException e) {
+            throw new RuntimeException("Error al redirigir después de cambiar la contraseña.");
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional
     public String activateAccount(String token) {
         Token activationToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new TokenNotFoundException("Token no encontrado."));
@@ -97,6 +180,7 @@ public class AuthServiceImpl implements AuthService {
         return "Cuenta activada con éxito.";
     }
 
+    /** {@inheritDoc} */
     @Override
     public UserResponseDTO login(LoginRequest request, HttpServletResponse response) {
         User user = userService.findByUsernameOrEmailOrThrow(request.getUsername(), request.getUsername());
@@ -119,6 +203,7 @@ public class AuthServiceImpl implements AuthService {
         return userMapper.toUserResponseDTO(user);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -139,12 +224,19 @@ public class AuthServiceImpl implements AuthService {
         return "Token de acceso actualizado.";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String logout(HttpServletResponse response) {
         cookieUtil.clearAuthCookies(response);
+        try {
+            response.sendRedirect(frontendUrl + "/login?logout=true");
+        } catch (IOException e) {
+            throw new RuntimeException("Error al redirigir después de cerrar la sesión.");
+        }
         return "Se ha cerrado la sesión correctamente.";
     }
 
+    /** {@inheritDoc} */
     @Override
     public UserResponseDTO getCurrentUser(String accessToken, String refreshToken, HttpServletResponse response) {
         if (accessToken == null || accessToken.isBlank()) {
@@ -180,4 +272,59 @@ public class AuthServiceImpl implements AuthService {
         }
         return codeBuilder.toString();
     }
+
+    /**
+     * Generates a secure temporary password.
+     * @return A temporary password string of 8 characters.
+     */
+    private String generateTemporaryPassword() {
+        // 🔹 Genera una contraseña de 10 caracteres segura
+        return UUID.randomUUID().toString()
+                .replace("-", "")
+                .substring(0, 8);
+    }
+
+    /**
+     * Verifies that two passwords comply with the matching or non-matching condition.
+     * @param password the main password
+     * @param confirmPassword the confirmation password
+     * @param shouldMatch true if passwords must match, false if they must be different
+     */
+    private void verifyPasswordComparison(
+            String password,
+            String confirmPassword,
+            boolean shouldMatch
+    ) {
+        if (shouldMatch && !password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden.");
+        }
+        if (!shouldMatch && password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+    }
+
+    /**
+     * Verifies that two passwords match.
+     * @param password the main password
+     * @param confirmPassword the confirmation password
+     */
+    private void verifyPasswordComparison(String password, String confirmPassword) {
+        boolean shouldMatch = true;
+        verifyPasswordComparison(password, confirmPassword, shouldMatch);
+    }
+
+    /**
+     * Verifies if a user already exists with the given email or username.
+     * @param email the email
+     * @param username the username
+     */
+    private void verifyIfUserExists(String email, String username) {
+        boolean userExists = userService.existsByEmail(email)
+                || userService.existsByUsername(username);
+
+        if (userExists) {
+            throw new IllegalArgumentException("El usuario ya existe con el correo electrónico o nombre de usuario proporcionado.");
+        }
+    }
+
 }

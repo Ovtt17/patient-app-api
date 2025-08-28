@@ -18,6 +18,8 @@ public enum BusinessErrorCodes {
     USER_NOT_FOUND (305, NOT_FOUND, "Usuario no encontrado."),
     ROLE_NOT_FOUND (306, NOT_FOUND, "Rol no encontrado. Contacta al administrador para más información."),
     TOKEN_NOT_FOUND (307, NOT_FOUND, "Token no encontrado. Solicita un nuevo token e intenta nuevamente."),
+    MUST_CHANGE_PASSWORD(308, FORBIDDEN, "Debes cambiar tu contraseña temporal antes de continuar."),
+
 
     ILLEGAL_ARGUMENT (399, BAD_REQUEST, "Argumento ilegal proporcionado. Verifica la información e intenta nuevamente."),
     USER_UNAUTHORIZED(401, UNAUTHORIZED, "No tienes permiso para realizar esta acción. Contacta al administrador si crees que esto es un error."),
