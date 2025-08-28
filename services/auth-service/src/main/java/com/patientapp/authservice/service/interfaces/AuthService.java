@@ -2,9 +2,13 @@ package com.patientapp.authservice.service.interfaces;
 
 import com.patientapp.authservice.doctor.dto.DoctorCreatedDTO;
 import com.patientapp.authservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.dto.ChangePasswordRequest;
 import com.patientapp.authservice.dto.LoginRequest;
 import com.patientapp.authservice.dto.RegisterRequest;
 import com.patientapp.authservice.dto.UserResponseDTO;
+import com.patientapp.authservice.handler.exceptions.MustChangePasswordException;
+import com.patientapp.authservice.handler.exceptions.TokenNotFoundException;
+import com.patientapp.authservice.handler.exceptions.UnauthorizedException;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -35,12 +39,23 @@ public interface AuthService {
      */
     DoctorCreatedDTO registerDoctor(DoctorRequestDTO request);
 
+
+    /**
+     * Changes the password for the currently authenticated user.
+     *
+     * @param request the change password request containing old and new passwords
+     * @throws UnauthorizedException if the user is not authenticated
+     * @throws IllegalArgumentException if the old password is incorrect or new passwords do not match
+     */
+    void changePassword(ChangePasswordRequest request);
+
+
     /**
      * Activates a user account using the provided activation token.
      *
      * @param token the activation token
      * @return a success message if the account is activated
-     * @throws com.patientapp.authservice.handler.exceptions.TokenNotFoundException if the token does not exist
+     * @throws TokenNotFoundException if the token does not exist
      * @throws RuntimeException if the token is expired
      */
     String activateAccount(String token);
@@ -51,7 +66,8 @@ public interface AuthService {
      * @param request  the login credentials
      * @param response the HTTP response where auth cookies will be set
      * @return the authenticated user information
-     * @throws com.patientapp.authservice.handler.exceptions.UnauthorizedException if credentials are invalid
+     * @throws UnauthorizedException if credentials are invalid
+     * @throws MustChangePasswordException if the user must change their password
      */
     UserResponseDTO login(LoginRequest request, HttpServletResponse response);
 
@@ -61,7 +77,7 @@ public interface AuthService {
      * @param refreshToken the refresh token string
      * @param response     the HTTP response where the new access token cookie will be set
      * @return a message indicating the access token was refreshed
-     * @throws com.patientapp.authservice.handler.exceptions.UnauthorizedException if the refresh token is missing or invalid
+     * @throws UnauthorizedException if the refresh token is missing or invalid
      */
     String refresh(String refreshToken, HttpServletResponse response);
 
@@ -81,7 +97,7 @@ public interface AuthService {
      * @param refreshToken the refresh token used to obtain a new access token if needed
      * @param response     the HTTP response where a refreshed access token cookie may be set
      * @return the current authenticated user information
-     * @throws com.patientapp.authservice.handler.exceptions.UnauthorizedException if tokens are invalid
+     * @throws UnauthorizedException if tokens are invalid
      */
     UserResponseDTO getCurrentUser(String accessToken, String refreshToken, HttpServletResponse response);
 }

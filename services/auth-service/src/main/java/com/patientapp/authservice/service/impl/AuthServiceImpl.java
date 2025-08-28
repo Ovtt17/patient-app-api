@@ -3,12 +3,14 @@ package com.patientapp.authservice.service.impl;
 import com.patientapp.authservice.doctor.client.DoctorClient;
 import com.patientapp.authservice.doctor.dto.DoctorCreatedDTO;
 import com.patientapp.authservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.dto.ChangePasswordRequest;
 import com.patientapp.authservice.dto.LoginRequest;
 import com.patientapp.authservice.dto.RegisterRequest;
 import com.patientapp.authservice.dto.UserResponseDTO;
 import com.patientapp.authservice.entity.Token;
 import com.patientapp.authservice.entity.User;
 import com.patientapp.authservice.enums.AuthProvider;
+import com.patientapp.authservice.handler.exceptions.MustChangePasswordException;
 import com.patientapp.authservice.handler.exceptions.TokenNotFoundException;
 import com.patientapp.authservice.handler.exceptions.UnauthorizedException;
 import com.patientapp.authservice.mapper.UserMapper;
@@ -19,6 +21,7 @@ import com.patientapp.authservice.service.interfaces.RoleService;
 import com.patientapp.authservice.service.interfaces.UserService;
 import com.patientapp.authservice.utils.CookieUtil;
 import com.patientapp.authservice.utils.NullSafe;
+import com.patientapp.authservice.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public String register(RegisterRequest request) {
-        verifyIfPasswordsMatch(request.password(), request.confirmPassword());
+        verifyPasswordComparison(request.password(), request.confirmPassword());
         verifyIfUserExists(request.email(), request.username());
 
         var patientRole = roleService.findByNameOrThrow(PACIENTE.name());
@@ -77,6 +80,7 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
                 .enabled(true) // ToDo: set to false for email verification
+                .mustChangePassword(false)
                 .provider(AuthProvider.LOCAL)
                 .roles(List.of(patientRole))
                 .build();
@@ -106,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
                 .accountLocked(false)
                 .enabled(true) // enabled true because doctor will change the password at first login
                 .password(passwordEncoded)
-                .temporaryPassword(passwordEncoded)
+                .mustChangePassword(true) // force to change password at first login
                 .roles(List.of(doctorRole))
                 .provider(AuthProvider.LOCAL)
                 .build();
@@ -117,6 +121,34 @@ public class AuthServiceImpl implements AuthService {
         doctorClient.create(doctorRequest);
         // ToDo: send tempPassword via email
         return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        String email = SecurityUtil.getAuthenticatedEmail()
+                .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado."));
+
+        User user = userService.findByEmailOrThrow(email);
+
+        // Verify old password matches the current password in DB
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("La contraseña antigua es incorrecta.");
+        }
+
+        // Verify new password and confirmation match each other
+        verifyPasswordComparison(request.newPassword(), request.confirmNewPassword());
+        // Verify new password is different from old password
+        boolean shouldMathOldAndNewPassword = false;
+        verifyPasswordComparison(
+                request.oldPassword(),
+                request.newPassword(),
+                shouldMathOldAndNewPassword
+        );
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setMustChangePassword(false);
+        userService.save(user);
     }
 
     /** {@inheritDoc} */
@@ -152,6 +184,10 @@ public class AuthServiceImpl implements AuthService {
             );
         } catch (Exception e) {
             throw new UnauthorizedException("El nombre de usuario o la contraseña son incorrectos.");
+        }
+
+        if (user.isMustChangePassword()) {
+            throw new MustChangePasswordException("El usuario debe cambiar la contraseña.");
         }
 
         user = (User) auth.getPrincipal();
@@ -236,16 +272,33 @@ public class AuthServiceImpl implements AuthService {
                 .substring(0, 8);
     }
 
-
     /**
-     * Verifies if the provided passwords match.
-     * @param password the password
+     * Verifies that two passwords comply with the matching or non-matching condition.
+     * @param password the main password
      * @param confirmPassword the confirmation password
+     * @param shouldMatch true if passwords must match, false if they must be different
      */
-    private void verifyIfPasswordsMatch(String password, String confirmPassword) {
-        if (!password.equals(confirmPassword)) {
+    private void verifyPasswordComparison(
+            String password,
+            String confirmPassword,
+            boolean shouldMatch
+    ) {
+        if (shouldMatch && !password.equals(confirmPassword)) {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
         }
+        if (!shouldMatch && password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+    }
+
+    /**
+     * Verifies that two passwords match.
+     * @param password the main password
+     * @param confirmPassword the confirmation password
+     */
+    private void verifyPasswordComparison(String password, String confirmPassword) {
+        boolean shouldMatch = true;
+        verifyPasswordComparison(password, confirmPassword, shouldMatch);
     }
 
     /**
