@@ -1,4 +1,4 @@
-package com.patientapp.authservice.common.handler.utils;
+package com.patientapp.authservice.common.utils;
 
 import com.patientapp.authservice.modules.user.entity.User;
 import org.springframework.security.core.Authentication;

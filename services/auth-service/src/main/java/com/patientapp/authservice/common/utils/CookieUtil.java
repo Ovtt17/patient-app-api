@@ -1,4 +1,4 @@
-package com.patientapp.authservice.common.handler.utils;
+package com.patientapp.authservice.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

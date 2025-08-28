@@ -1,4 +1,4 @@
-package com.patientapp.authservice.common.handler.utils;
+package com.patientapp.authservice.common.utils;
 
 import java.util.function.Supplier;
 

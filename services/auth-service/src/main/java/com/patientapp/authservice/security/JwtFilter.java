@@ -3,7 +3,7 @@ package com.patientapp.authservice.security;
 import com.patientapp.authservice.modules.user.entity.User;
 import com.patientapp.authservice.common.handler.exceptions.UnauthorizedException;
 import com.patientapp.authservice.modules.user.service.interfaces.UserService;
-import com.patientapp.authservice.common.handler.utils.CookieUtil;
+import com.patientapp.authservice.common.utils.CookieUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
