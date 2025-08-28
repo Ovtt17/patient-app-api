@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Auth", description = "Endpoints for authentication and user management")
+@Tag(name = "Auth", description = "Endpoints para autenticación y gestión de usuarios")
 public class AuthController {
     private final AuthService authService;
 
@@ -53,7 +53,7 @@ public class AuthController {
      * @param token The activation token sent to the user's email.
      * @return A message indicating successful account activation.
      */
-    @Operation(summary = "Activate user account", description = "Activates a user account using the provided activation token.")
+    @Operation(summary = "Activar cuenta de usuario", description = "Activa una cuenta de usuario usando el token de activación proporcionado.")
     @PostMapping("/activate-account")
     public ResponseEntity<String> activateAccount(
             @RequestParam final String token
@@ -68,7 +68,7 @@ public class AuthController {
      * @param response The HTTP response to set cookies.
      * @return The authenticated user's details.
      */
-    @Operation(summary = "User login", description = "Authenticates a user and returns user details. Sets authentication cookies in the response.")
+    @Operation(summary = "Iniciar sesión de usuario", description = "Autentica a un usuario y retorna sus detalles. Establece cookies de autenticación en la respuesta.")
     @PostMapping("/login")
     public ResponseEntity<UserResponseDTO> login(
             @RequestBody @Valid final LoginRequest request,
@@ -84,7 +84,7 @@ public class AuthController {
      * @param response The HTTP response to set cookies if needed.
      * @return The current user's details.
      */
-    @Operation(summary = "Get current user", description = "Returns the currently authenticated user's details using the access and refresh tokens.")
+    @Operation(summary = "Obtener usuario actual", description = "Retorna los detalles del usuario autenticado usando los tokens de acceso y refresco.")
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getCurrentUser(
             @CookieValue(name = "access_token", required = false) final String accessToken,
@@ -100,7 +100,7 @@ public class AuthController {
      * @param response The HTTP response to set the new access token cookie.
      * @return A message indicating the access token was refreshed.
      */
-    @Operation(summary = "Refresh access token", description = "Refreshes the access token using the provided refresh token and sets a new access token cookie.")
+    @Operation(summary = "Refrescar token de acceso", description = "Refresca el token de acceso usando el token de refresco proporcionado y establece una nueva cookie de acceso.")
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(
             @CookieValue(name = "refresh_token", required = false) final String refreshToken,
@@ -114,7 +114,7 @@ public class AuthController {
      * @param response The HTTP response to clear cookies.
      * @return A message indicating successful logout.
      */
-    @Operation(summary = "Logout user", description = "Logs out the current user by clearing authentication cookies.")
+    @Operation(summary = "Cerrar sesión de usuario", description = "Cierra la sesión del usuario actual eliminando las cookies de autenticación.")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(
             HttpServletResponse response
