@@ -1,6 +1,7 @@
 package com.patientapp.doctorservice.doctor.service.interfaces;
 
 import com.patientapp.doctorservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.doctorservice.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.doctor.entity.Doctor;
 import com.patientapp.doctorservice.handler.exceptions.DoctorAlreadyExistsException;
 import com.patientapp.doctorservice.handler.exceptions.DoctorNotFoundException;
@@ -16,39 +17,48 @@ public interface DoctorService {
      *
      * @param request DoctorRequestDTO containing doctor's firstName, lastName, email, phone,
      *            medicalLicense, officeNumber, userId, and specialtyIds
-     * @return The created Doctor entity
+     * @return ID of the created Doctor
      * @throws DoctorAlreadyExistsException if a doctor with the same email or userId already exists
      * @throws DoctorAlreadyExistsException if a doctor with the same email or userId already exists
      * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    Doctor create(DoctorRequestDTO request);
+    UUID create(DoctorRequestDTO request);
 
     /**
      * Retrieves all active doctors.
      *
-     * @return List of Doctor entities that are active
+     * @return List of Doctors that are active
      */
-    List<Doctor> getAllActive();
+    List<DoctorResponseDTO> getAllActive();
 
     /**
      * Retrieves a doctor by their unique ID.
      *
      * @param id UUID of the doctor
+     * @return DoctorResponseDTO with the given ID
+     * @throws DoctorNotFoundException if the doctor does not exist
+     */
+    DoctorResponseDTO getById(UUID id);
+
+    /**
+     * Retrieves a Doctor entity by its ID or throws an exception if not found.
+     *
+     * @param id UUID of the doctor
      * @return Doctor entity with the given ID
      * @throws DoctorNotFoundException if the doctor does not exist
      */
-    Doctor getById(UUID id);
+    Doctor getEntityByIdOrThrow(UUID id);
 
     /**
      * Updates the information and specialties of an existing doctor.
      *
      * @param id  UUID of the doctor to update
      * @param request DoctorRequestDTO containing the updated information and specialtyIds
-     * @return The updated Doctor entity
+     * @return The updated DoctorResponseDTO
      * @throws DoctorNotFoundException if the doctor does not exist
      * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    Doctor update(UUID id, DoctorRequestDTO request);
+    DoctorResponseDTO update(UUID id, DoctorRequestDTO request);
 
     /**
      * Deactivates a doctor instead of deleting them from the database.

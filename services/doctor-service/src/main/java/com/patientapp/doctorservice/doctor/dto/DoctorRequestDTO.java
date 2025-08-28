@@ -27,13 +27,13 @@ public record DoctorRequestDTO(
         @Email(message = "Debe ingresar un email válido.")
         String email,
 
+        @NotBlank(message = "El número de teléfono es obligatorio")
         @Pattern(
-                regexp = "^(\\+?\\d{1,3})?\\d{8,15}$",
-                message = "El número de teléfono no es válido."
+                regexp = "^\\d{1,8}$",
+                message = "El número de teléfono debe tener hasta 8 dígitos."
         )
         String phone,
 
-        @NotBlank(message = "El número de licencia médica es obligatorio.")
         @Size(
                 min = 3,
                 max = 20,
@@ -41,7 +41,6 @@ public record DoctorRequestDTO(
         )
         String medicalLicense,
 
-        @NotBlank(message = "El número de consultorio es obligatorio.")
         @Size(
                 min = 1,
                 max = 10,
@@ -49,7 +48,6 @@ public record DoctorRequestDTO(
         )
         String officeNumber,
 
-        @NotEmpty(message = "Debe seleccionar al menos una especialidad.")
         Set<@Positive(message = "El ID de especialidad debe ser positivo.") Integer> specialtyIds,
 
         @NotNull(message = "El ID de usuario es obligatorio.")

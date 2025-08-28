@@ -1,16 +1,17 @@
 package com.patientapp.doctorservice.doctor.service.impl;
 
 import com.patientapp.doctorservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.doctorservice.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.doctor.entity.Doctor;
+import com.patientapp.doctorservice.doctor.mapper.DoctorMapper;
+import com.patientapp.doctorservice.doctor.repository.DoctorRepository;
+import com.patientapp.doctorservice.doctor.service.interfaces.DoctorService;
 import com.patientapp.doctorservice.handler.exceptions.DoctorAlreadyExistsException;
 import com.patientapp.doctorservice.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.handler.exceptions.EmailAlreadyInUseException;
 import com.patientapp.doctorservice.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.specialty.entity.Specialty;
-import com.patientapp.doctorservice.doctor.mapper.DoctorMapper;
-import com.patientapp.doctorservice.doctor.repository.DoctorRepository;
 import com.patientapp.doctorservice.specialty.repository.SpecialtyRepository;
-import com.patientapp.doctorservice.doctor.service.interfaces.DoctorService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,28 +31,45 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public Doctor create(DoctorRequestDTO request) {
+    public UUID create(DoctorRequestDTO request) {
         validateEmail(request.email());
         validateUserId(request.userId());
-        Set<Specialty> specialties = fetchSpecialties(request.specialtyIds());
+
+        Set<Specialty> specialties = getValidatedSpecialties(request.specialtyIds());
 
         Doctor doctor = doctorMapper.toEntity(request, new ArrayList<>(specialties));
-        return doctorRepository.save(doctor);
+        doctor.setActive(true);
+        return doctorRepository.save(doctor).getId();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Doctor> getAllActive() {
-        return doctorRepository.findByActiveTrue();
+    public List<DoctorResponseDTO> getAllActive() {
+        List<Doctor> doctors = doctorRepository.findByActiveTrue();
+        if (doctors.isEmpty()) {
+            throw new DoctorNotFoundException("No se encontraron doctores activos");
+        }
+        return doctors.stream()
+                .map(doctorMapper::toDoctorResponse)
+                .toList();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Doctor getById(UUID id) {
+    public DoctorResponseDTO getById(UUID id) {
+        Doctor doctor = getEntityByIdOrThrow(id);
+        return doctorMapper.toDoctorResponse(doctor);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Doctor getEntityByIdOrThrow(UUID id) {
         return doctorRepository.findById(id)
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado"));
     }
@@ -61,8 +79,8 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public Doctor update(UUID id, DoctorRequestDTO request) {
-        Doctor doctor = getById(id);
+    public DoctorResponseDTO update(UUID id, DoctorRequestDTO request) {
+        Doctor doctor = getEntityByIdOrThrow(id);
 
         doctor.setFirstName(request.firstName());
         doctor.setLastName(request.lastName());
@@ -71,10 +89,12 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setMedicalLicense(request.medicalLicense());
         doctor.setOfficeNumber(request.officeNumber());
 
-        Set<Specialty> specialties = fetchSpecialties(request.specialtyIds());
+
+        Set<Specialty> specialties = getValidatedSpecialties(request.specialtyIds());
         doctor.setSpecialties(specialties);
 
-        return doctorRepository.save(doctor);
+        Doctor doctorUpdated = doctorRepository.save(doctor);
+        return doctorMapper.toDoctorResponse(doctorUpdated);
     }
 
     /**
@@ -83,7 +103,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public void deactivate(UUID id) {
-        Doctor doctor = getById(id);
+        Doctor doctor = getEntityByIdOrThrow(id);
         doctor.setActive(false);
         doctorRepository.save(doctor);
     }
@@ -108,6 +128,12 @@ public class DoctorServiceImpl implements DoctorService {
         if (doctorRepository.findByUserId(userId).isPresent()) {
             throw new DoctorAlreadyExistsException("Ya existe un doctor vinculado a este usuario");
         }
+    }
+
+    private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {
+        if (specialtyIds == null || specialtyIds.isEmpty()) return Set.of();
+
+        return fetchSpecialties(specialtyIds);
     }
 
     /**

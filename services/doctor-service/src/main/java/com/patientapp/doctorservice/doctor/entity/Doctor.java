@@ -26,7 +26,7 @@ public class Doctor {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String medicalLicense;
 
     @Column(length = 15)
@@ -35,7 +35,7 @@ public class Doctor {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String officeNumber;
 
     @Column(nullable = false)

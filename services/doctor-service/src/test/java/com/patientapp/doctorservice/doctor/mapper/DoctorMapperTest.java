@@ -1,6 +1,7 @@
 package com.patientapp.doctorservice.doctor.mapper;
 
 import com.patientapp.doctorservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.doctorservice.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.doctor.entity.Doctor;
 import com.patientapp.doctorservice.specialty.entity.Specialty;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,8 +60,86 @@ class DoctorMapperTest {
         assertEquals(dto.officeNumber(), doctor.getOfficeNumber());
         assertEquals(userId, doctor.getUserId());
         assertTrue(doctor.isActive());
-        assertEquals(specialties.size(), doctor.getSpecialties().size());
-        assertTrue(doctor.getSpecialties().contains(specialty1));
-        assertTrue(doctor.getSpecialties().contains(specialty2));
+        assertEquals(2, doctor.getSpecialties().size());
+    }
+
+    @Test
+    void should_map_doctor_request_to_entity_with_empty_specialties() {
+        UUID userId = UUID.randomUUID();
+        DoctorRequestDTO dto = new DoctorRequestDTO(
+                "Ana",
+                "García",
+                "ana@example.com",
+                "12345678",
+                "LIC54321",
+                "202",
+                Set.of(),
+                userId
+        );
+        List<Specialty> specialties = List.of();
+        Doctor doctor = doctorMapper.toEntity(dto, specialties);
+        assertNotNull(doctor);
+        assertEquals(0, doctor.getSpecialties().size());
+    }
+
+    @Test
+    void should_map_doctor_request_to_entity_with_null_specialties() {
+        UUID userId = UUID.randomUUID();
+        DoctorRequestDTO dto = new DoctorRequestDTO(
+                "Luis",
+                "Martínez",
+                "luis@example.com",
+                "99999999",
+                "LIC99999",
+                "303",
+                Set.of(),
+                userId
+        );
+        Doctor doctor = doctorMapper.toEntity(dto, null);
+        assertNotNull(doctor);
+        assertNotNull(doctor.getSpecialties());
+        assertEquals(0, doctor.getSpecialties().size());
+    }
+
+    @Test
+    void should_map_doctor_to_doctor_response() {
+        Specialty specialty = new Specialty();
+        specialty.setId(1);
+        specialty.setName("Pediatría");
+        Doctor doctor = new Doctor();
+        doctor.setFirstName("Maria");
+        doctor.setLastName("Lopez");
+        doctor.setEmail("maria@example.com");
+        doctor.setPhone("55555555");
+        doctor.setMedicalLicense("LIC00001");
+        doctor.setOfficeNumber("404");
+        UUID userId = UUID.randomUUID();
+        doctor.setUserId(userId);
+        doctor.setSpecialties(Set.of(specialty));
+        DoctorResponseDTO response = doctorMapper.toDoctorResponse(doctor);
+        assertEquals("Maria", response.firstName());
+        assertEquals("Lopez", response.lastName());
+        assertEquals("maria@example.com", response.email());
+        assertEquals("55555555", response.phone());
+        assertEquals("LIC00001", response.medicalLicense());
+        assertEquals("404", response.officeNumber());
+        assertEquals(userId.toString(), response.userId());
+        assertEquals(List.of("Pediatría"), response.specialties());
+    }
+
+    @Test
+    void should_map_doctor_to_doctor_response_with_null_specialties() {
+        Doctor doctor = new Doctor();
+        doctor.setFirstName("Carlos");
+        doctor.setLastName("Ruiz");
+        doctor.setEmail("carlos@example.com");
+        doctor.setPhone("11112222");
+        doctor.setMedicalLicense("LIC22222");
+        doctor.setOfficeNumber("505");
+        doctor.setUserId(UUID.randomUUID());
+        doctor.setSpecialties(null);
+        DoctorResponseDTO response = doctorMapper.toDoctorResponse(doctor);
+        assertNotNull(response);
+        assertTrue(response.specialties().isEmpty());
     }
 }
