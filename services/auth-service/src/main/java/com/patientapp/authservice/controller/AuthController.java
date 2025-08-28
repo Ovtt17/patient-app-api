@@ -2,6 +2,7 @@ package com.patientapp.authservice.controller;
 
 import com.patientapp.authservice.doctor.dto.DoctorCreatedDTO;
 import com.patientapp.authservice.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.dto.ChangePasswordRequest;
 import com.patientapp.authservice.dto.LoginRequest;
 import com.patientapp.authservice.dto.RegisterRequest;
 import com.patientapp.authservice.dto.UserResponseDTO;
@@ -48,6 +49,12 @@ public class AuthController {
             @RequestBody @Valid final DoctorRequestDTO request
     ) {
         return ResponseEntity.ok(authService.registerDoctor(request));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+        return ResponseEntity.ok("Contraseña cambiada exitosamente.");
     }
 
     /**
