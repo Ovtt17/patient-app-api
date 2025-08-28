@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,6 +43,7 @@ public class AuthController {
      */
     @Operation(summary = "Registrar nuevo doctor", description = "Registra un nuevo doctor en el sistema. Se genera un usuario con rol DOCTOR y una contraseña temporal.")
     @PostMapping("/register-doctor")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<DoctorCreatedDTO> registerDoctor(
             @RequestBody @Valid final DoctorRequestDTO request
     ) {
