@@ -4,7 +4,7 @@ import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.role.entity.Role;
 import com.patientapp.authservice.modules.user.entity.User;
-import com.patientapp.authservice.common.handler.utils.NullSafe;
+import com.patientapp.authservice.common.utils.NullSafe;
 import org.springframework.stereotype.Component;
 
 @Component
