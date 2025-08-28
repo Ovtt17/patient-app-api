@@ -23,6 +23,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
+
     private final AuthenticationProvider authenticationProvider;
     private final JwtFilter jwtFilter;
     private final AuthenticationEntryPoint authenticationEntryPoint;
@@ -34,51 +35,47 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(withDefaults())
-                .csrf(
-                        csrf -> csrf
-                                .ignoringRequestMatchers(
-                                        "/auth/register",
-                                        "/auth/login",
-                                        "/auth/activate-account",
-                                        "/auth/refresh"
-                                )
-                                .csrfTokenRepository(csrfTokenRepository)
-                )
-                .authorizeHttpRequests(req ->
-                        req.requestMatchers(
-                                        HttpMethod.POST,
-                                        "/auth/register",
-                                        "/auth/login",
-                                        "/auth/activate-account",
-                                        "/auth/refresh",
-                                        "/auth/logout",
-                                        "/v2/api-docs",
-                                        "/v3/api-docs",
-                                        "/v3/api-docs/**",
-                                        "/swagger-resources",
-                                        "/swagger-resources/**",
-                                        "/configuration/ui",
-                                        "/configuration/security",
-                                        "/swagger-ui/**",
-                                        "/webjars/**",
-                                        "/swagger-ui.html"
-                                ).permitAll()
-                                .requestMatchers(HttpMethod.GET, "/csrf/token").permitAll()
-                                .anyRequest()
-                                .authenticated()
-                )
-                .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(oAuth2UserService)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                "/auth/register",
+                                "/auth/login",
+                                "/auth/activate-account",
+                                "/auth/refresh",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**"
                         )
+                        .csrfTokenRepository(csrfTokenRepository)
+                )
+                .authorizeHttpRequests(req -> req
+                        // Endpoints públicos de autenticación
+                        .requestMatchers(HttpMethod.POST,
+                                "/auth/register",
+                                "/auth/login",
+                                "/auth/activate-account",
+                                "/auth/refresh",
+                                "/auth/logout"
+                        ).permitAll()
+                        // Endpoints públicos de Swagger/OpenAPI
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // Endpoint CSRF token
+                        .requestMatchers(HttpMethod.GET, "/csrf/token").permitAll()
+                        // Todo lo demás requiere autenticación
+                        .anyRequest().authenticated()
+                )
+                // OAuth2 Login
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                         .successHandler(authenticationSuccessHandler)
                 )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(STATELESS)
-                )
+                // Manejo de errores
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+                // Stateless + JWT
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
