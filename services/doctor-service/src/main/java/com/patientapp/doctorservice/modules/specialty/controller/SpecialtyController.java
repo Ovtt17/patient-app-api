@@ -25,7 +25,7 @@ public class SpecialtyController {
 
     private final SpecialtyService specialtyService;
 
-    @Operation(summary = "Crear una nueva especialidad")
+    @Operation(summary = "Crear una nueva especialidad", description = "Crea una especialidad médica. Requiere rol ADMIN. Devuelve la especialidad creada con su ID.")
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
@@ -36,13 +36,13 @@ public class SpecialtyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Obtener todas las especialidades")
+    @Operation(summary = "Obtener todas las especialidades", description = "Obtiene la lista completa de especialidades disponibles.")
     @GetMapping
     public ResponseEntity<List<SpecialtyResponseDTO>> getAll() {
         return ResponseEntity.ok(specialtyService.getAll());
     }
 
-    @Operation(summary = "Obtener una especialidad por ID")
+    @Operation(summary = "Obtener una especialidad por ID", description = "Obtiene una especialidad existente por su ID. Devuelve 404 si no existe.")
     @GetMapping("/{id}")
     public ResponseEntity<SpecialtyResponseDTO> getById(
             @Parameter(description = "ID de la especialidad") @PathVariable Integer id
@@ -50,7 +50,7 @@ public class SpecialtyController {
         return ResponseEntity.ok(specialtyService.getById(id));
     }
 
-    @Operation(summary = "Actualizar una especialidad")
+    @Operation(summary = "Actualizar una especialidad", description = "Actualiza los datos de una especialidad existente. Requiere rol ADMIN.")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
@@ -61,7 +61,7 @@ public class SpecialtyController {
         return ResponseEntity.ok(specialtyService.update(id, request));
     }
 
-    @Operation(summary = "Eliminar una especialidad")
+    @Operation(summary = "Eliminar una especialidad", description = "Elimina una especialidad por su ID. Requiere rol ADMIN. Retorna un mensaje de confirmación.")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
