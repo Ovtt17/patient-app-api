@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/specialties")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasRole('ROLE_DOCTOR')")
 @Tag(name = "Especialidades", description = "Gestión de especialidades médicas")
 public class SpecialtyController {
 
@@ -27,6 +27,7 @@ public class SpecialtyController {
 
     @Operation(summary = "Crear una nueva especialidad")
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ResponseEntity<SpecialtyResponseDTO> create(
             @Valid @RequestBody SpecialtyRequestDTO request
@@ -51,6 +52,7 @@ public class SpecialtyController {
 
     @Operation(summary = "Actualizar una especialidad")
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ResponseEntity<SpecialtyResponseDTO> update(
             @Parameter(description = "ID de la especialidad") @PathVariable Integer id,
@@ -61,6 +63,7 @@ public class SpecialtyController {
 
     @Operation(summary = "Eliminar una especialidad")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ResponseEntity<String> delete(
             @Parameter(description = "ID de la especialidad") @PathVariable Integer id
