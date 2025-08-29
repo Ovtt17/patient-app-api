@@ -42,7 +42,7 @@ public class AuthController {
      * @param request The doctor registration request containing doctor details.
      * @return The created doctor's details including temporary password.
      */
-    @Operation(summary = "Registrar nuevo doctor", description = "Registra un nuevo doctor en el sistema. Se genera un usuario con rol DOCTOR y una contraseña temporal.")
+    @Operation(summary = "Registrar nuevo doctores", description = "Registra un nuevo doctor en el sistema. Se genera un usuario con rol DOCTOR y una contraseña temporal.")
     @PostMapping("/register-doctor")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<DoctorCreatedDTO> registerDoctor(
