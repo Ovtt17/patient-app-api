@@ -5,6 +5,7 @@ import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @RequestMapping("doctors")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_DOCTOR')")
+@Tag(name = "Doctor", description = "Gestión de doctores")
 public class DoctorController {
 
     private final DoctorService doctorService;
@@ -61,6 +63,7 @@ public class DoctorController {
 
     @Operation(summary = "Desactivar un doctor")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ResponseEntity<?> deactivate(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id
