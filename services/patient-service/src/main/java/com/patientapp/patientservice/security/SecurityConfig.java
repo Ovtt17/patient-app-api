@@ -1,4 +1,4 @@
-package com.patientapp.doctorservice.security;
+package com.patientapp.patientservice.security;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
