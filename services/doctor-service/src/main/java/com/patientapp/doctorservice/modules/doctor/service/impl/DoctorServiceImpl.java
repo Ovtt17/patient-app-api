@@ -1,17 +1,15 @@
 package com.patientapp.doctorservice.modules.doctor.service.impl;
 
+import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
+import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 import com.patientapp.doctorservice.modules.doctor.mapper.DoctorMapper;
 import com.patientapp.doctorservice.modules.doctor.repository.DoctorRepository;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
-import com.patientapp.doctorservice.common.handler.exceptions.DoctorAlreadyExistsException;
-import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
-import com.patientapp.doctorservice.common.handler.exceptions.EmailAlreadyInUseException;
-import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
-import com.patientapp.doctorservice.modules.specialty.repository.SpecialtyRepository;
+import com.patientapp.doctorservice.modules.specialty.service.SpecialtyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,21 +21,17 @@ import java.util.*;
 public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;
-    private final SpecialtyRepository specialtyRepository;
     private final DoctorMapper doctorMapper;
+    private final SpecialtyService specialtyService;
 
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
-    public UUID create(DoctorRequestDTO request) {
-        validateEmail(request.email());
-        validateUserId(request.userId());
-
-        Set<Specialty> specialties = getValidatedSpecialties(request.specialtyIds());
-
-        Doctor doctor = doctorMapper.toEntity(request, new ArrayList<>(specialties));
+    public UUID create(UUID userId) {
+        Doctor doctor = new Doctor();
+        doctor.setUserId(userId);
         doctor.setActive(true);
         return doctorRepository.save(doctor).getId();
     }
@@ -81,14 +75,8 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     public DoctorResponseDTO update(UUID id, DoctorRequestDTO request) {
         Doctor doctor = getEntityByIdOrThrow(id);
-
-        doctor.setFirstName(request.firstName());
-        doctor.setLastName(request.lastName());
-        doctor.setEmail(request.email());
-        doctor.setPhone(request.phone());
-        doctor.setMedicalLicense(request.medicalLicense());
-        doctor.setOfficeNumber(request.officeNumber());
-
+        doctor.setMedicalLicense(request.medicalLicense().trim());
+        doctor.setOfficeNumber(request.officeNumber().trim());
 
         Set<Specialty> specialties = getValidatedSpecialties(request.specialtyIds());
         doctor.setSpecialties(specialties);
@@ -108,28 +96,6 @@ public class DoctorServiceImpl implements DoctorService {
         doctorRepository.save(doctor);
     }
 
-    /**
-     * Validates that the email is not already registered for another doctor.
-     *
-     * @param email The email to check
-     */
-    private void validateEmail(String email) {
-        if (doctorRepository.findByEmail(email).isPresent()) {
-            throw new EmailAlreadyInUseException("El correo electrónico ya está registrado para otro doctor");
-        }
-    }
-
-    /**
-     * Validates that the userId is not already linked to another doctor.
-     *
-     * @param userId The userId to check
-     */
-    private void validateUserId(UUID userId) {
-        if (doctorRepository.findByUserId(userId).isPresent()) {
-            throw new DoctorAlreadyExistsException("Ya existe un doctor vinculado a este usuario");
-        }
-    }
-
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {
         if (specialtyIds == null || specialtyIds.isEmpty()) return Set.of();
 
@@ -143,7 +109,7 @@ public class DoctorServiceImpl implements DoctorService {
      * @return Set of Specialty entities
      */
     private Set<Specialty> fetchSpecialties(Set<Integer> specialtyIds) {
-        List<Specialty> specialties = specialtyRepository.findByIdIn(new ArrayList<>(specialtyIds));
+        List<Specialty> specialties = specialtyService.findByIdIn(new ArrayList<>(specialtyIds));
         if (specialties.size() != specialtyIds.size()) {
             throw new SpecialtyNotFoundException("Una o más especialidades no fueron encontradas");
         }

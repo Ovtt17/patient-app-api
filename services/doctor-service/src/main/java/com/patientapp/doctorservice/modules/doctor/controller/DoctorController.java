@@ -31,9 +31,9 @@ public class DoctorController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ResponseEntity<UUID> create(
-            @Valid @RequestBody DoctorRequestDTO request
+            @Parameter(description = "UUID del usuario") @RequestBody UUID userId
     ) {
-        var doctorId = doctorService.create(request);
+        var doctorId = doctorService.create(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorId);
     }
 

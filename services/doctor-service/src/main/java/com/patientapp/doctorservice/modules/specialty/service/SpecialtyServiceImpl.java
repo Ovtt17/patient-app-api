@@ -90,4 +90,9 @@ public class SpecialtyServiceImpl implements SpecialtyService {
         return repository.findById(id)
                 .orElseThrow(() -> new SpecialtyNotFoundException("Especialidad no encontrada."));
     }
+
+    @Override
+    public List<Specialty> findByIdIn(List<Integer> specialtyIds) {
+        return repository.findByIdIn(specialtyIds);
+    }
 }

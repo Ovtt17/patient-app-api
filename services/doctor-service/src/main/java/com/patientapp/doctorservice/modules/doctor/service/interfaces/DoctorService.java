@@ -1,11 +1,10 @@
 package com.patientapp.doctorservice.modules.doctor.service.interfaces;
 
+import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
+import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
-import com.patientapp.doctorservice.common.handler.exceptions.DoctorAlreadyExistsException;
-import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
-import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,16 +12,12 @@ import java.util.UUID;
 public interface DoctorService {
 
     /**
-     * Creates a new doctor with the provided information and specialties.
+     * Creates a new doctor associated with the given userId.
      *
-     * @param request DoctorRequestDTO containing doctor's firstName, lastName, email, phone,
-     *            medicalLicense, officeNumber, userId, and specialtyIds
+     * @param userId UUID of the user associated with the doctor
      * @return ID of the created Doctor
-     * @throws DoctorAlreadyExistsException if a doctor with the same email or userId already exists
-     * @throws DoctorAlreadyExistsException if a doctor with the same email or userId already exists
-     * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    UUID create(DoctorRequestDTO request);
+    UUID create(UUID userId);
 
     /**
      * Retrieves all active doctors.

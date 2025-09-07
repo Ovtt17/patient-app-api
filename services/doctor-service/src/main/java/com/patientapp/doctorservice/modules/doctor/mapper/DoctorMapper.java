@@ -9,29 +9,24 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class DoctorMapper {
 
     public Doctor toEntity(DoctorRequestDTO request, List<Specialty> specialties) {
-        Doctor doctor = new Doctor();
-        doctor.setFirstName(request.firstName());
-        doctor.setLastName(request.lastName());
-        doctor.setEmail(request.email());
-        doctor.setPhone(request.phone());
-        doctor.setMedicalLicense(NullSafe.ifNotBlankOrNull(request.medicalLicense()));
-        doctor.setOfficeNumber(NullSafe.ifNotBlankOrNull(request.officeNumber()));
-        doctor.setUserId(request.userId());
-        doctor.setSpecialties(new HashSet<>(specialties));
-        return doctor;
+        Set<Specialty> specialtySet = specialties == null ? new HashSet<>() : new HashSet<>(specialties);
+        return Doctor.builder()
+                .medicalLicense(NullSafe.ifNotBlankOrNull(request.medicalLicense()))
+                .officeNumber(NullSafe.ifNotBlankOrNull(request.officeNumber()))
+                .userId(request.userId())
+                .specialties(specialtySet)
+                .active(true)
+                .build();
     }
 
     public DoctorResponseDTO toDoctorResponse(Doctor doctor) {
         return DoctorResponseDTO.builder()
-                .firstName(doctor.getFirstName())
-                .lastName(doctor.getLastName())
-                .email(doctor.getEmail())
-                .phone(doctor.getPhone())
                 .medicalLicense(doctor.getMedicalLicense())
                 .officeNumber(doctor.getOfficeNumber())
                 .userId(doctor.getUserId().toString())

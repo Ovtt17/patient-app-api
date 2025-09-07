@@ -70,4 +70,12 @@ public interface SpecialtyService {
      * @throws SpecialtyNotFoundException if the specialty does not exist
      */
     Specialty findByIdOrThrow(Integer id);
+
+    /**
+     * Finds specialties by a list of IDs.
+     *
+     * @param specialtyIds List of Integer IDs
+     * @return List of Specialty entities matching the IDs
+     */
+    List<Specialty> findByIdIn(List<Integer> specialtyIds);
 }
