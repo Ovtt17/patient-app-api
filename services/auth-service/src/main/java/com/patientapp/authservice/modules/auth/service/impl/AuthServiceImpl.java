@@ -91,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         var userSaved = userService.save(user);
-        var userId = patientClient.create(userSaved.getId());
+        patientClient.create(userSaved.getId());
         // ToDo: send token via email
         return "Usuario registrado con éxito.";
     }
