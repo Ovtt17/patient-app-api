@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.UUID;
 
 @FeignClient(
-        name = "doctor-service",
+        name = "patient-service",
         url = "${application.config.patient-url}",
         configuration = FeignConfig.class
 )
