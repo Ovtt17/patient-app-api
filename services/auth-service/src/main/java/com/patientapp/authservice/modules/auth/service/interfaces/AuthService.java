@@ -101,4 +101,12 @@ public interface AuthService {
      * @throws UnauthorizedException if tokens are invalid
      */
     UserResponseDTO getCurrentUser(String accessToken, String refreshToken, HttpServletResponse response);
+
+    /**
+     * Validates the provided JWT token.
+     *
+     * @param token the JWT token to validate
+     * @return true if the token is valid, false otherwise
+     */
+    boolean validateToken(String token);
 }

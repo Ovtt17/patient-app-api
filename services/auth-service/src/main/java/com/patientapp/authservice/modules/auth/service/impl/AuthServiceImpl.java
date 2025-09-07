@@ -91,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         var userSaved = userService.save(user);
-        patientClient.create(userSaved.getId());
+        var userId = patientClient.create(userSaved.getId());
         // ToDo: send token via email
         return "Usuario registrado con éxito.";
     }
@@ -237,6 +237,13 @@ public class AuthServiceImpl implements AuthService {
         String email = jwtService.extractUsername(accessToken);
         User user = userService.findByEmailOrThrow(email);
         return userMapper.toUserResponseDTO(user);
+    }
+
+    @Override
+    public boolean validateToken(String token) {
+        String username = jwtService.extractUsername(token);
+        UserDetails user = userDetailsService.loadUserByUsername(username);
+        return jwtService.isTokenValid(token, user);
     }
 
     private String generateAndSaveActivationToken(final User user) {
