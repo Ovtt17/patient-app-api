@@ -12,21 +12,22 @@ public class PatientMapper {
 
     public Patient toEntity(PatientRequestDTO request) {
         return Patient.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .email(request.email())
-                .phone(request.phone())
                 .userId(request.userId())
+                .weight(request.weight())
+                .height(request.height())
+                .birthDate(request.birthDate())
+                .notes(request.notes().trim())
                 .build();
     }
 
     public PatientResponseDTO toPatientResponse(Patient patient) {
         return PatientResponseDTO.builder()
                 .id(patient.getId())
-                .firstName(patient.getFirstName())
-                .lastName(patient.getLastName())
-                .email(patient.getEmail())
-                .phone(patient.getPhone())
+                .userId(patient.getUserId())
+                .weight(patient.getWeight())
+                .height(patient.getHeight())
+                .birthDate(patient.getBirthDate())
+                .notes(patient.getNotes())
                 .build();
     }
 

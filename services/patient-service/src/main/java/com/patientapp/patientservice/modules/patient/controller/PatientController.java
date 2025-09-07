@@ -28,10 +28,8 @@ public class PatientController {
     @Operation(summary = "Crear un nuevo paciente")
     @PostMapping
     @Transactional
-    public ResponseEntity<UUID> create(
-            @Valid @RequestBody PatientRequestDTO request
-    ) {
-        var patientId = patientService.create(request);
+    public ResponseEntity<UUID> create(@RequestBody UUID userId) {
+        var patientId = patientService.create(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(patientId);
     }
 

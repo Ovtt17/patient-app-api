@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
@@ -24,18 +25,6 @@ public class Patient {
     private UUID id;
 
     @Column(nullable = false)
-    private String firstName;
-
-    @Column(nullable = false)
-    private String lastName;
-
-    @Column(length = 15)
-    private String phone;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
     private boolean active;
 
     // Auth Service User ID
@@ -49,4 +38,16 @@ public class Patient {
     @LastModifiedDate
     @Column(insertable = false)
     private Instant lastModifiedDate;
+
+    @Column
+    private Double weight;
+
+    @Column
+    private Double height;
+
+    @Column
+    private LocalDate birthDate;
+
+    @Column(length = 1000, nullable = true)
+    private String notes;
 }

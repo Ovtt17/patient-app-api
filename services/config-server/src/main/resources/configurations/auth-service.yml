@@ -64,3 +64,4 @@ application:
                 expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
     config:
         doctor-url: ${DOCTOR_SERVICE_URL}
+        patient-url: ${PATIENT_SERVICE_URL}

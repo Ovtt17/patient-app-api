@@ -1,7 +1,6 @@
 package com.patientapp.patientservice.modules.patient.service.impl;
 
 import com.patientapp.patientservice.common.handler.exceptions.PatientNotFoundException;
-import com.patientapp.patientservice.common.utils.NullSafe;
 import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
@@ -31,8 +30,9 @@ public class PatientServiceImpl implements PatientService {
      */
     @Override
     @Transactional
-    public UUID create(PatientRequestDTO request) {
-        Patient patient = mapper.toEntity(request);
+    public UUID create(UUID userId) {
+        Patient patient = new Patient();
+        patient.setUserId(userId);
         patient.setActive(true);
         return repository.save(patient).getId();
     }
@@ -84,13 +84,12 @@ public class PatientServiceImpl implements PatientService {
     @Transactional
     public PatientResponseDTO update(UUID id, PatientRequestDTO request) {
         Patient patient = getEntityByIdOrThrow(id);
+        patient.setWeight(request.weight());
+        patient.setHeight(request.height());
+        patient.setBirthDate(request.birthDate());
+        patient.setNotes(request.notes().trim());
 
-        patient.setFirstName(NullSafe.ifNotBlankOrNull(request.firstName()));
-        patient.setLastName(NullSafe.ifNotBlankOrNull(request.lastName()));
-        patient.setEmail(NullSafe.ifNotBlankOrNull(request.email()));
-        patient.setPhone(NullSafe.ifNotBlankOrNull(request.phone()));
         Patient patientUpdated = repository.save(patient);
-
         return mapper.toPatientResponse(patientUpdated);
     }
 
