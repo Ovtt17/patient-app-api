@@ -37,6 +37,7 @@ public class DoctorController {
 
     @Operation(summary = "Obtener todos los doctores activos")
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<DoctorResponseDTO>> getAllActive() {
         return ResponseEntity.ok(doctorService.getAllActive());
     }
