@@ -1,16 +1,15 @@
 package com.patientapp.doctorservice.doctor.service.impl;
 
+import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
+import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 import com.patientapp.doctorservice.modules.doctor.mapper.DoctorMapper;
 import com.patientapp.doctorservice.modules.doctor.repository.DoctorRepository;
-import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
-import com.patientapp.doctorservice.common.handler.exceptions.EmailAlreadyInUseException;
-import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.modules.doctor.service.impl.DoctorServiceImpl;
 import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
-import com.patientapp.doctorservice.modules.specialty.repository.SpecialtyRepository;
+import com.patientapp.doctorservice.modules.specialty.service.SpecialtyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 /**
@@ -36,122 +36,116 @@ import static org.mockito.Mockito.*;
 class DoctorServiceImplTest {
 
     @InjectMocks
-    private DoctorServiceImpl doctorService; // Service under test
+    private DoctorServiceImpl doctorService;
 
     @Mock
-    private DoctorRepository doctorRepository; // Mock repository for doctors
+    private DoctorRepository doctorRepository;
 
     @Mock
-    private SpecialtyRepository specialtyRepository; // Mock repository for specialties
+    private SpecialtyService specialtyService;
 
     @Mock
-    private DoctorMapper doctorMapper; // Mock mapper to convert between DTOs and entities
+    private DoctorMapper doctorMapper;
 
     private UUID doctorId;
     private Doctor doctor;
     private DoctorRequestDTO request;
     private Specialty specialty;
+    private UUID userId;
 
-    /**
-     * Initializes common test data before each test case.
-     */
     @BeforeEach
     void setUp() {
         doctorId = UUID.randomUUID();
+        userId = UUID.randomUUID();
 
-        // Create a sample specialty for testing
+        // Specialty de ejemplo
         specialty = new Specialty();
         specialty.setId(1);
         specialty.setName("Cardiology");
         specialty.setDescription("Heart-related specialty");
 
-        // Create a request DTO for doctor creation
+        // Request para update
         request = new DoctorRequestDTO(
-                "John",
-                "Doe",
-                "john.doe@example.com",
-                "+1234567890",
                 "MED123",
                 "101",
                 Set.of(1),
-                UUID.randomUUID()
+                userId
         );
 
-        // Create a doctor entity for testing
+        // Doctor de prueba
         doctor = new Doctor();
         doctor.setId(doctorId);
-        doctor.setFirstName("John");
-        doctor.setLastName("Doe");
-        doctor.setEmail(request.email());
-        doctor.setPhone(request.phone());
         doctor.setMedicalLicense(request.medicalLicense());
         doctor.setOfficeNumber(request.officeNumber());
-        doctor.setUserId(request.userId());
+        doctor.setUserId(userId);
         doctor.setActive(true);
         doctor.setSpecialties(Set.of(specialty));
     }
 
-    /**
-     * Tests successful creation of a doctor.
-     * Verifies that the doctor is saved and a temporary password is returned.
-     */
     @Test
     @DisplayName("create: should successfully create a doctor")
     void create_success() {
-        when(doctorRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        when(doctorRepository.findByUserId(any(UUID.class))).thenReturn(Optional.empty());
-        when(specialtyRepository.findByIdIn(any())).thenReturn(List.of(specialty));
-        when(doctorMapper.toEntity(eq(request), anyList())).thenReturn(doctor);
         when(doctorRepository.save(any(Doctor.class))).thenReturn(doctor);
 
-        UUID resultId = doctorService.create(request);
+        UUID resultId = doctorService.create(userId);
 
         assertNotNull(resultId);
         assertEquals(doctor.getId(), resultId);
-
-        verify(doctorRepository).findByEmail(request.email());
-        verify(doctorRepository).findByUserId(request.userId());
         verify(doctorRepository).save(any(Doctor.class));
     }
 
-    /**
-     * Tests that an exception is thrown if the email already exists.
-     */
     @Test
-    @DisplayName("create: should throw EmailAlreadyInUseException if email exists")
-    void create_emailExists() {
-        when(doctorRepository.findByEmail(request.email())).thenReturn(Optional.of(doctor));
+    @DisplayName("update: should successfully update a doctor")
+    void update_success() {
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
+        when(specialtyService.findByIdIn(anyList())).thenReturn(List.of(specialty));
+        when(doctorRepository.save(any(Doctor.class))).thenReturn(doctor);
+        when(doctorMapper.toDoctorResponse(doctor)).thenReturn(
+                new DoctorResponseDTO(
+                        "John",
+                        "Doe",
+                        null,
+                        null,
+                        doctor.getMedicalLicense(),
+                        doctor.getOfficeNumber(),
+                        doctor.getUserId().toString(),
+                        List.of("Cardiology")
+                )
+        );
 
-        assertThrows(EmailAlreadyInUseException.class, () -> doctorService.create(request));
-        verify(doctorRepository).findByEmail(request.email());
+        DoctorResponseDTO updated = doctorService.update(doctorId, request);
+
+        assertNotNull(updated);
+        assertEquals(request.medicalLicense(), updated.medicalLicense());
+        verify(doctorRepository).findById(doctorId);
+        verify(doctorRepository).save(doctor);
+    }
+
+    @Test
+    @DisplayName("update: should throw SpecialtyNotFoundException if specialties missing")
+    void update_specialtyNotFound() {
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
+        when(specialtyService.findByIdIn(anyList())).thenReturn(List.of()); // No specialties
+
+        assertThrows(SpecialtyNotFoundException.class, () -> doctorService.update(doctorId, request));
         verify(doctorRepository, never()).save(any());
     }
 
-    /**
-     * Tests that an exception is thrown if the specialties provided do not exist.
-     */
-    @Test
-    @DisplayName("create: should throw SpecialtyNotFoundException if specialties are missing")
-    void create_specialtyNotFound() {
-        when(doctorRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-        when(doctorRepository.findByUserId(request.userId())).thenReturn(Optional.empty());
-        when(specialtyRepository.findByIdIn(any())).thenReturn(List.of()); // No specialties found
-
-        assertThrows(SpecialtyNotFoundException.class, () -> doctorService.create(request));
-        verify(doctorRepository, never()).save(any());
-    }
-
-    /**
-     * Tests successful retrieval of a doctor by ID.
-     */
     @Test
     @DisplayName("getById: should return doctor if exists")
     void getById_success() {
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
         when(doctorMapper.toDoctorResponse(doctor)).thenReturn(
-                new DoctorResponseDTO("John", "Doe", doctor.getEmail(), doctor.getPhone(),
-                        doctor.getMedicalLicense(), doctor.getOfficeNumber(), doctor.getUserId().toString(),
-                        List.of("Cardiology"))
+                new DoctorResponseDTO(
+                        "John",
+                        "Doe",
+                        null,
+                        null,
+                        doctor.getMedicalLicense(),
+                        doctor.getOfficeNumber(),
+                        doctor.getUserId().toString(),
+                        List.of("Cardiology")
+                )
         );
 
         DoctorResponseDTO result = doctorService.getById(doctorId);
@@ -161,9 +155,6 @@ class DoctorServiceImplTest {
         verify(doctorMapper).toDoctorResponse(doctor);
     }
 
-    /**
-     * Tests that an exception is thrown if the doctor is not found by ID.
-     */
     @Test
     @DisplayName("getById: should throw DoctorNotFoundException if not found")
     void getById_notFound() {

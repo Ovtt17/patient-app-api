@@ -28,10 +28,6 @@ class DoctorMapperTest {
         // Arrange
         UUID userId = UUID.randomUUID();
         DoctorRequestDTO dto = new DoctorRequestDTO(
-                "Juan",
-                "Pérez",
-                "juan@example.com",
-                "87227697",
                 "LIC12345",
                 "101",
                 Set.of(1, 2),
@@ -53,10 +49,6 @@ class DoctorMapperTest {
 
         // Assert
         assertNotNull(doctor);
-        assertEquals(dto.firstName(), doctor.getFirstName());
-        assertEquals(dto.lastName(), doctor.getLastName());
-        assertEquals(dto.email(), doctor.getEmail());
-        assertEquals(dto.phone(), doctor.getPhone());
         assertEquals(dto.medicalLicense(), doctor.getMedicalLicense());
         assertEquals(dto.officeNumber(), doctor.getOfficeNumber());
         assertEquals(userId, doctor.getUserId());
@@ -68,10 +60,6 @@ class DoctorMapperTest {
     void should_map_doctor_request_to_entity_with_empty_specialties() {
         UUID userId = UUID.randomUUID();
         DoctorRequestDTO dto = new DoctorRequestDTO(
-                "Ana",
-                "García",
-                "ana@example.com",
-                "12345678",
                 "LIC54321",
                 "202",
                 Set.of(),
@@ -79,27 +67,29 @@ class DoctorMapperTest {
         );
         List<Specialty> specialties = List.of();
         Doctor doctor = doctorMapper.toEntity(dto, specialties);
+
         assertNotNull(doctor);
         assertEquals(0, doctor.getSpecialties().size());
+        assertEquals(dto.medicalLicense(), doctor.getMedicalLicense());
+        assertEquals(dto.officeNumber(), doctor.getOfficeNumber());
     }
 
     @Test
     void should_map_doctor_request_to_entity_with_null_specialties() {
         UUID userId = UUID.randomUUID();
         DoctorRequestDTO dto = new DoctorRequestDTO(
-                "Luis",
-                "Martínez",
-                "luis@example.com",
-                "99999999",
                 "LIC99999",
                 "303",
                 Set.of(),
                 userId
         );
         Doctor doctor = doctorMapper.toEntity(dto, null);
+
         assertNotNull(doctor);
         assertNotNull(doctor.getSpecialties());
         assertEquals(0, doctor.getSpecialties().size());
+        assertEquals(dto.medicalLicense(), doctor.getMedicalLicense());
+        assertEquals(dto.officeNumber(), doctor.getOfficeNumber());
     }
 
     @Test
@@ -107,40 +97,39 @@ class DoctorMapperTest {
         Specialty specialty = new Specialty();
         specialty.setId(1);
         specialty.setName("Pediatría");
-        Doctor doctor = new Doctor();
-        doctor.setFirstName("Maria");
-        doctor.setLastName("Lopez");
-        doctor.setEmail("maria@example.com");
-        doctor.setPhone("55555555");
-        doctor.setMedicalLicense("LIC00001");
-        doctor.setOfficeNumber("404");
-        UUID userId = UUID.randomUUID();
-        doctor.setUserId(userId);
-        doctor.setSpecialties(Set.of(specialty));
+
+        Doctor doctor = Doctor.builder()
+                .medicalLicense("LIC00001")
+                .officeNumber("404")
+                .userId(UUID.randomUUID())
+                .specialties(Set.of(specialty))
+                .active(true)
+                .build();
+
         DoctorResponseDTO response = doctorMapper.toDoctorResponse(doctor);
-        assertEquals("Maria", response.firstName());
-        assertEquals("Lopez", response.lastName());
-        assertEquals("maria@example.com", response.email());
-        assertEquals("55555555", response.phone());
+
+        assertNotNull(response);
         assertEquals("LIC00001", response.medicalLicense());
         assertEquals("404", response.officeNumber());
-        assertEquals(userId.toString(), response.userId());
+        assertEquals(doctor.getUserId().toString(), response.userId());
         assertEquals(List.of("Pediatría"), response.specialties());
     }
 
     @Test
     void should_map_doctor_to_doctor_response_with_null_specialties() {
-        Doctor doctor = new Doctor();
-        doctor.setFirstName("Carlos");
-        doctor.setLastName("Ruiz");
-        doctor.setEmail("carlos@example.com");
-        doctor.setPhone("11112222");
-        doctor.setMedicalLicense("LIC22222");
-        doctor.setOfficeNumber("505");
-        doctor.setUserId(UUID.randomUUID());
-        doctor.setSpecialties(null);
+        Doctor doctor = Doctor.builder()
+                .medicalLicense("LIC22222")
+                .officeNumber("505")
+                .userId(UUID.randomUUID())
+                .specialties(null)
+                .active(true)
+                .build();
+
         DoctorResponseDTO response = doctorMapper.toDoctorResponse(doctor);
+
         assertNotNull(response);
+        assertEquals("LIC22222", response.medicalLicense());
+        assertEquals("505", response.officeNumber());
         assertTrue(response.specialties().isEmpty());
     }
 }
