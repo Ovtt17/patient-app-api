@@ -48,6 +48,6 @@ public class Patient {
     @Column
     private LocalDate birthDate;
 
-    @Column(length = 1000, nullable = true)
+    @Column(length = 500)
     private String notes;
 }

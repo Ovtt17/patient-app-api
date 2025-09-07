@@ -19,6 +19,7 @@ import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -128,7 +129,7 @@ class PatientServiceImplTest {
         Pageable used = pageableCaptor.getValue();
         assertEquals(0, used.getPageNumber());
         assertEquals(5, used.getPageSize());
-        assertEquals(Sort.Direction.ASC, used.getSort().getOrderFor("userId").getDirection());
+        assertEquals(Sort.Direction.ASC, Objects.requireNonNull(used.getSort().getOrderFor("userId")).getDirection());
     }
 
     // getAllActive non-empty DESC
@@ -156,7 +157,7 @@ class PatientServiceImplTest {
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(repository).findAllByActiveTrue(pageableCaptor.capture());
         Pageable used = pageableCaptor.getValue();
-        assertEquals(Sort.Direction.DESC, used.getSort().getOrderFor("birthDate").getDirection());
+        assertEquals(Sort.Direction.DESC, Objects.requireNonNull(used.getSort().getOrderFor("birthDate")).getDirection());
     }
 
     // getById

@@ -8,7 +8,7 @@ CREATE TABLE patients
     weight             DOUBLE        NULL,
     height             DOUBLE        NULL,
     birth_date         date          NULL,
-    notes              VARCHAR(1000) NULL,
+    notes              VARCHAR(500) NULL,
     CONSTRAINT pk_patients PRIMARY KEY (id)
 );
 
