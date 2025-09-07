@@ -6,6 +6,7 @@ import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
 import com.patientapp.authservice.modules.auth.dto.LoginRequest;
 import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
+import com.patientapp.authservice.modules.patient.client.PatientClient;
 import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.token.entity.Token;
 import com.patientapp.authservice.modules.user.entity.User;
@@ -61,6 +62,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final UserService userService;
     private final DoctorClient doctorClient;
+    private final PatientClient patientClient;
 
     @Value("${application.front-end.url}")
     private String frontendUrl;
@@ -88,7 +90,8 @@ public class AuthServiceImpl implements AuthService {
                 .roles(List.of(patientRole))
                 .build();
 
-        userService.save(user);
+        var userSaved = userService.save(user);
+        patientClient.create(userSaved.getId());
         // ToDo: send token via email
         return "Usuario registrado con éxito.";
     }
@@ -119,8 +122,7 @@ public class AuthServiceImpl implements AuthService {
 
         var userSaved = userService.save(user);
 
-        DoctorRequestDTO doctorRequest = userMapper.toDoctorRequestDTO(userSaved);
-        doctorClient.create(doctorRequest.userId());
+        doctorClient.create(userSaved.getId());
         // ToDo: send tempPassword via email
         return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
     }
