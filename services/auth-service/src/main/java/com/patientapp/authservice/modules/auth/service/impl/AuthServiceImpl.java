@@ -120,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
         var userSaved = userService.save(user);
 
         DoctorRequestDTO doctorRequest = userMapper.toDoctorRequestDTO(userSaved);
-        doctorClient.create(doctorRequest);
+        doctorClient.create(doctorRequest.userId());
         // ToDo: send tempPassword via email
         return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
     }
