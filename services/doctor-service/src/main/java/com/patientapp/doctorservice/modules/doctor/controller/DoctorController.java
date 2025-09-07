@@ -30,9 +30,7 @@ public class DoctorController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
-    public ResponseEntity<UUID> create(
-            @Parameter(description = "UUID del usuario") @RequestBody UUID userId
-    ) {
+    public ResponseEntity<UUID> create(@RequestBody UUID userId) {
         var doctorId = doctorService.create(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorId);
     }
