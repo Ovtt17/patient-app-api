@@ -57,6 +57,14 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getById(id));
     }
 
+    @Operation(summary = "Obtener un paciente por ID de usuario")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<PatientResponseDTO> getByUserId(
+            @Parameter(description = "UUID del usuario") @PathVariable UUID userId
+    ) {
+        return ResponseEntity.ok(patientService.getByUserId(userId));
+    }
+
     @Operation(summary = "Actualizar información de un paciente")
     @PutMapping("/{id}")
     @Transactional

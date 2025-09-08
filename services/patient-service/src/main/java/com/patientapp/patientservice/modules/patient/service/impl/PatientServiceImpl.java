@@ -1,6 +1,8 @@
 package com.patientapp.patientservice.modules.patient.service.impl;
 
 import com.patientapp.patientservice.common.handler.exceptions.PatientNotFoundException;
+import com.patientapp.patientservice.modules.auth.client.AuthClient;
+import com.patientapp.patientservice.modules.auth.dto.UserResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
@@ -24,6 +26,7 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository repository;
     private final PatientMapper mapper;
+    private final AuthClient authClient;
 
     /**
      * {@inheritDoc}
@@ -103,5 +106,17 @@ public class PatientServiceImpl implements PatientService {
         // TODO: Block access in auth-service
         patient.setActive(false);
         repository.save(patient);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PatientResponseDTO getByUserId(UUID userId) {
+        Patient patient = repository.findByUserId(userId)
+                .orElseThrow(() -> new PatientNotFoundException("Paciente no encontrado para el usuario dado."));
+
+        UserResponseDTO user = authClient.getUserById(userId);
+        return mapper.toPatientResponse(patient, user);
     }
 }

@@ -61,4 +61,11 @@ public interface PatientService {
      * @param id UUID of the patient to deactivate.
      */
     void deactivate(UUID id);
+
+    /**
+     * Retrieves a patient by their associated user ID.
+     * @param userId UUID of the user.
+     * @return PatientResponseDTO of the found patient.
+     */
+    PatientResponseDTO getByUserId(UUID userId);
 }
