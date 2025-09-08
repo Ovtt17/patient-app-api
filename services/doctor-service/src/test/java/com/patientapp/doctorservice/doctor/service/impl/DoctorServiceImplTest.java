@@ -102,6 +102,7 @@ class DoctorServiceImplTest {
         when(doctorRepository.save(any(Doctor.class))).thenReturn(doctor);
         when(doctorMapper.toDoctorResponse(doctor)).thenReturn(
                 new DoctorResponseDTO(
+                        UUID.randomUUID(),
                         "John",
                         "Doe",
                         null,
@@ -137,6 +138,7 @@ class DoctorServiceImplTest {
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
         when(doctorMapper.toDoctorResponse(doctor)).thenReturn(
                 new DoctorResponseDTO(
+                        UUID.randomUUID(),
                         "John",
                         "Doe",
                         null,

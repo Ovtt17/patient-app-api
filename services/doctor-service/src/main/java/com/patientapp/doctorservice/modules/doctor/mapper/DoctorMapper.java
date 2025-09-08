@@ -42,6 +42,7 @@ public class DoctorMapper {
 
     public DoctorResponseDTO toDoctorResponse(Doctor doctor, UserResponseDTO user) {
         return DoctorResponseDTO.builder()
+                .id(doctor.getId())
                 .firstName(user.firstName())
                 .lastName(user.lastName())
                 .email(user.email())
