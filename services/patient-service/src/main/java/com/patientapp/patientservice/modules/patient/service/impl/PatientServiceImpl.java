@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -59,7 +60,20 @@ public class PatientServiceImpl implements PatientService {
         if (patients.isEmpty()) {
             return null;
         }
-        return mapper.toPatientPagedResponseDTO(patients);
+
+        List<PatientResponseDTO> patientDTOs = patients.stream()
+                .map(patient -> {
+                    UserResponseDTO user = authClient.getUserById(patient.getUserId());
+                    return mapper.toPatientResponse(patient, user);
+                })
+                .toList();
+
+        return PatientPagedResponseDTO.builder()
+                .patients(patientDTOs)
+                .page(patients.getNumber())
+                .totalPages(patients.getTotalPages())
+                .totalElements(patients.getTotalElements())
+                .build();
     }
 
     /**
@@ -68,7 +82,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientResponseDTO getById(UUID id) {
         Patient patient = getEntityByIdOrThrow(id);
-        return mapper.toPatientResponse(patient);
+        return getByUserId(patient.getUserId());
     }
 
     /**

@@ -59,7 +59,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorResponseDTO getById(UUID id) {
         Doctor doctor = getEntityByIdOrThrow(id);
-        return doctorMapper.toDoctorResponse(doctor);
+        return getByUserId(doctor.getUserId());
     }
 
     /**
