@@ -4,6 +4,7 @@ import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundExce
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
 import com.patientapp.doctorservice.modules.auth.client.AuthClient;
 import com.patientapp.doctorservice.modules.auth.dto.UserResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
@@ -14,6 +15,10 @@ import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
 import com.patientapp.doctorservice.modules.specialty.service.SpecialtyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -43,14 +48,35 @@ public class DoctorServiceImpl implements DoctorService {
      * {@inheritDoc}
      */
     @Override
-    public List<DoctorResponseDTO> getAllActive() {
-        List<Doctor> doctors = doctorRepository.findByActiveTrue();
+    public DoctorPagedResponseDTO getAllActive(
+            int page,
+            int size,
+            String sortBy,
+            String sortOrder
+    ) {
+        Sort sort = sortOrder.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Doctor> doctors = doctorRepository.findAllByActiveTrue(pageable);
         if (doctors.isEmpty()) {
-            throw new DoctorNotFoundException("No se encontraron doctores activos");
+            return null;
         }
-        return doctors.stream()
-                .map(doctorMapper::toDoctorResponse)
+
+        List<DoctorResponseDTO> doctorDTOs = doctors.stream()
+                .map(doctor -> {
+                    UserResponseDTO user = authClient.getUserById(doctor.getUserId());
+                    return doctorMapper.toDoctorResponse(doctor, user);
+                })
                 .toList();
+
+        return DoctorPagedResponseDTO.builder()
+                .doctors(doctorDTOs)
+                .page(doctors.getNumber())
+                .totalPages(doctors.getTotalPages())
+                .totalElements(doctors.getTotalElements())
+                .build();
     }
 
     /**

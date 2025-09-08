@@ -2,11 +2,11 @@ package com.patientapp.doctorservice.modules.doctor.service.interfaces;
 
 import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface DoctorService {
@@ -20,11 +20,19 @@ public interface DoctorService {
     UUID create(UUID userId);
 
     /**
-     * Retrieves all active doctors.
-     *
-     * @return List of Doctors that are active
+     * Retrieves a paginated and sorted list of all active doctors.
+     * @param page      zero-based page index to retrieve
+     * @param size      number of records per page
+     * @param sortBy    field name to sort by
+     * @param sortOrder sort direction ("asc" or "desc")
+     * @return {@link DoctorPagedResponseDTO} containing the requested page of active doctors
      */
-    List<DoctorResponseDTO> getAllActive();
+    DoctorPagedResponseDTO getAllActive(
+            int page,
+            int size,
+            String sortBy,
+            String sortOrder
+    );
 
     /**
      * Retrieves a doctor by their unique ID.

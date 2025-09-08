@@ -1,6 +1,8 @@
 package com.patientapp.doctorservice.modules.doctor.repository;
 
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +20,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     // Find doctors by specialty id
     List<Doctor> findBySpecialtiesId(Integer specialtyId);
+
+    Page<Doctor> findAllByActiveTrue(Pageable pageable);
 }
