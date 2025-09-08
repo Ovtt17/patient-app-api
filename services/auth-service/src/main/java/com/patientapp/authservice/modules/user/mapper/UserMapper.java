@@ -17,9 +17,11 @@ public class UserMapper {
     public UserResponseDTO toUserResponseDTO(User user) {
         return UserResponseDTO.builder()
                 .id(NullSafe.ifPresentOrNull(user.getId()))
-                .username(NullSafe.ifNotBlankOrNull(user.getUsername()))
+                .firstName(NullSafe.ifNotBlankOrNull(user.getFirstName()))
+                .lastName(NullSafe.ifNotBlankOrNull(user.getLastName()))
                 .email(NullSafe.ifNotBlankOrNull(user.getEmail()))
                 .phone(NullSafe.ifNotBlankOrNull(user.getPhone()))
+                .username(NullSafe.ifNotBlankOrNull(user.getUsername()))
                 .profilePictureUrl(NullSafe.ifNotBlankOrNull(user.getProfilePicture()))
                 .roles(user.getRoles().stream()
                         .map(Role::getName)

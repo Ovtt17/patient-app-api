@@ -10,6 +10,7 @@ import java.util.UUID;
 @FeignClient(
         name = "doctor-service",
         url = "${application.config.doctor-url}",
+        path = "/api/v1/doctors",
         configuration = FeignConfig.class
 )
 public interface DoctorClient {

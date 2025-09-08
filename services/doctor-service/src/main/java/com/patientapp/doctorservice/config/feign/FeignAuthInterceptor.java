@@ -1,4 +1,4 @@
-package com.patientapp.authservice.config.feign;
+package com.patientapp.doctorservice.config.feign;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;

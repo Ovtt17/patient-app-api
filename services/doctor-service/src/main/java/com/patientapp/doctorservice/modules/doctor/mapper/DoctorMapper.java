@@ -1,5 +1,6 @@
 package com.patientapp.doctorservice.modules.doctor.mapper;
 
+import com.patientapp.doctorservice.modules.auth.dto.UserResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
@@ -27,6 +28,24 @@ public class DoctorMapper {
 
     public DoctorResponseDTO toDoctorResponse(Doctor doctor) {
         return DoctorResponseDTO.builder()
+                .medicalLicense(doctor.getMedicalLicense())
+                .officeNumber(doctor.getOfficeNumber())
+                .userId(doctor.getUserId().toString())
+                .specialties(
+                        doctor.getSpecialties() == null ? List.of() :
+                                doctor.getSpecialties().stream()
+                                        .map(Specialty::getName)
+                                        .toList()
+                )
+                .build();
+    }
+
+    public DoctorResponseDTO toDoctorResponse(Doctor doctor, UserResponseDTO user) {
+        return DoctorResponseDTO.builder()
+                .firstName(user.firstName())
+                .lastName(user.lastName())
+                .email(user.email())
+                .phone(user.phone())
                 .medicalLicense(doctor.getMedicalLicense())
                 .officeNumber(doctor.getOfficeNumber())
                 .userId(doctor.getUserId().toString())

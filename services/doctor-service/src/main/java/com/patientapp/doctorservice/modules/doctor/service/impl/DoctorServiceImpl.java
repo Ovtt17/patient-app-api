@@ -2,6 +2,8 @@ package com.patientapp.doctorservice.modules.doctor.service.impl;
 
 import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
+import com.patientapp.doctorservice.modules.auth.client.AuthClient;
+import com.patientapp.doctorservice.modules.auth.dto.UserResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
@@ -23,6 +25,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorRepository doctorRepository;
     private final DoctorMapper doctorMapper;
     private final SpecialtyService specialtyService;
+    private final AuthClient authClient;
 
     /**
      * {@inheritDoc}
@@ -94,6 +97,15 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = getEntityByIdOrThrow(id);
         doctor.setActive(false);
         doctorRepository.save(doctor);
+    }
+
+    @Override
+    public DoctorResponseDTO getByUserId(UUID userId) {
+        Doctor doctor = doctorRepository.findByUserId(userId)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado para el usuario dado."));
+
+        UserResponseDTO user = authClient.getUserById(userId);
+        return doctorMapper.toDoctorResponse(doctor, user);
     }
 
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {

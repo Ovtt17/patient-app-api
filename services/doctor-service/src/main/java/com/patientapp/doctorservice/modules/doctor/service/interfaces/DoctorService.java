@@ -62,4 +62,13 @@ public interface DoctorService {
      * @throws DoctorNotFoundException if the doctor does not exist
      */
     void deactivate(UUID id);
+
+    /**
+     * Retrieves a doctor by their associated user ID.
+     *
+     * @param userId UUID of the user associated with the doctor
+     * @return DoctorResponseDTO associated with the given userId
+     * @throws DoctorNotFoundException if no doctor is associated with the given userId
+     */
+    DoctorResponseDTO getByUserId(UUID userId);
 }

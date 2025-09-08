@@ -8,9 +8,11 @@ import java.util.UUID;
 @Builder
 public record UserResponseDTO(
         UUID id,
-        String username,
+        String firstName,
+        String lastName,
         String email,
         String phone,
+        String username,
         String profilePictureUrl,
         List<String> roles,
         boolean mustChangePassword

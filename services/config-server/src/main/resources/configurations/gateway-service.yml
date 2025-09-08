@@ -53,3 +53,6 @@ application:
     front-end:
         url: ${FRONT_END_URL}
         domain: ${FRONT_END_DOMAIN}
+    security:
+        jwt:
+            secret-key: ${JWT_SECRET_KEY}

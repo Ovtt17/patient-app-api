@@ -1,14 +1,15 @@
 package com.patientapp.authservice.security;
 
-import com.patientapp.authservice.modules.user.entity.User;
 import com.patientapp.authservice.common.handler.exceptions.UnauthorizedException;
-import com.patientapp.authservice.modules.user.service.interfaces.UserService;
 import com.patientapp.authservice.common.utils.CookieUtil;
+import com.patientapp.authservice.modules.user.entity.User;
+import com.patientapp.authservice.modules.user.service.interfaces.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseCookie;
 import org.springframework.lang.NonNull;
@@ -21,8 +22,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
-import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
 @Component
 @RequiredArgsConstructor
@@ -38,51 +37,72 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
         if (isPublicPath(request)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String accessToken = cookieUtil.getAccessTokenFromCookie(request);
-        final String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
-        final String userEmail;
+        // Buscar token en header
+        String accessToken = null;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+        }
 
-        if (refreshToken == null || refreshToken.isBlank()) {
+        final String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
+        final boolean fromHeader = accessToken != null; // Si viene del header
+
+        // Si no viene del header, buscar cookie
+        if (!fromHeader) {
+            accessToken = cookieUtil.getAccessTokenFromCookie(request);
+        }
+
+        // Si no hay access token ni header ni cookie, no hay nada que hacer
+        if ((accessToken == null || accessToken.isBlank()) && !fromHeader) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (accessToken == null || accessToken.isBlank()) {
-            String email = jwtService.extractUsername(refreshToken);
-            User user = userService.findByEmailOrThrow(email);
-
-            if (!jwtService.isTokenValid(refreshToken, user)) {
-                throw new UnauthorizedException("Token de refresco inválido.");
-            }
-
-            final String newAccessToken = jwtService.generateAccessToken(user);
-            final ResponseCookie accessTokenCookie = cookieUtil.createAccessTokenCookie(newAccessToken);
-            accessToken = newAccessToken;
-
-            response.addHeader(SET_COOKIE, accessTokenCookie.toString());
-        }
-
-        userEmail = jwtService.extractUsername(accessToken);
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        // Validar token
+        try {
+            String userEmail = jwtService.extractUsername(accessToken);
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(accessToken, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            if (!jwtService.isTokenValid(accessToken, userDetails)) {
+                if (fromHeader) {
+                    throw new UnauthorizedException("Token inválido");
+                } else {
+                    // Si es frontend, intentar refresh con refresh token
+                    if (refreshToken != null && !refreshToken.isBlank()) {
+                        userEmail = jwtService.extractUsername(refreshToken);
+                        User user = userService.findByEmailOrThrow(userEmail);
+                        if (jwtService.isTokenValid(refreshToken, user)) {
+                            accessToken = jwtService.generateAccessToken(user);
+                            ResponseCookie accessTokenCookie = cookieUtil.createAccessTokenCookie(accessToken);
+                            response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+                            userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+                        }
+                    }
+                }
             }
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        } catch (Exception e) {
+            if (fromHeader) {
+                throw new UnauthorizedException("Token inválido");
+            }
+            // Si es frontend y algo falla, ignorar y dejar pasar para manejar como no autenticado
         }
+
         filterChain.doFilter(request, response);
     }
 
