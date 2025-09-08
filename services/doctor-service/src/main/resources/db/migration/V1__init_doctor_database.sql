@@ -7,15 +7,13 @@ CREATE TABLE doctor_specialties
 
 CREATE TABLE doctors
 (
-    id              BINARY(16)   NOT NULL,
-    first_name      VARCHAR(255) NOT NULL,
-    last_name       VARCHAR(255) NOT NULL,
-    medical_license VARCHAR(255) NULL,
-    phone           VARCHAR(15)  NULL,
-    email           VARCHAR(255) NOT NULL,
-    office_number   VARCHAR(255) NULL,
-    active          BIT(1)       NOT NULL,
-    user_id         BINARY(16)   NOT NULL,
+    id                 BINARY(16)   NOT NULL,
+    medical_license    VARCHAR(255) NULL,
+    office_number      VARCHAR(255) NULL,
+    active             BIT(1)       NOT NULL,
+    user_id            BINARY(16)   NOT NULL,
+    created_date       datetime     NOT NULL,
+    last_modified_date datetime     NULL,
     CONSTRAINT pk_doctors PRIMARY KEY (id)
 );
 
@@ -26,9 +24,6 @@ CREATE TABLE specialties
     `description` VARCHAR(250)       NULL,
     CONSTRAINT pk_specialties PRIMARY KEY (id)
 );
-
-ALTER TABLE doctors
-    ADD CONSTRAINT uc_doctors_email UNIQUE (email);
 
 ALTER TABLE doctors
     ADD CONSTRAINT uc_doctors_medicallicense UNIQUE (medical_license);

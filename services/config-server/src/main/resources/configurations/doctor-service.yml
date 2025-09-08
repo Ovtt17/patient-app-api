@@ -27,3 +27,5 @@ application:
     security:
         jwt:
             secret-key: ${JWT_SECRET_KEY}
+    config:
+        auth-url: ${AUTH_SERVICE_URL}

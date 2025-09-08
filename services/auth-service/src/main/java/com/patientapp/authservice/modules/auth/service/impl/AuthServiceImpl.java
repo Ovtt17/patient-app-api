@@ -6,6 +6,7 @@ import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
 import com.patientapp.authservice.modules.auth.dto.LoginRequest;
 import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
+import com.patientapp.authservice.modules.patient.client.PatientClient;
 import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.token.entity.Token;
 import com.patientapp.authservice.modules.user.entity.User;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,6 +63,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final UserService userService;
     private final DoctorClient doctorClient;
+    private final PatientClient patientClient;
 
     @Value("${application.front-end.url}")
     private String frontendUrl;
@@ -88,7 +91,8 @@ public class AuthServiceImpl implements AuthService {
                 .roles(List.of(patientRole))
                 .build();
 
-        userService.save(user);
+        var userSaved = userService.save(user);
+        patientClient.create(userSaved.getId());
         // ToDo: send token via email
         return "Usuario registrado con éxito.";
     }
@@ -119,8 +123,7 @@ public class AuthServiceImpl implements AuthService {
 
         var userSaved = userService.save(user);
 
-        DoctorRequestDTO doctorRequest = userMapper.toDoctorRequestDTO(userSaved);
-        doctorClient.create(doctorRequest);
+        doctorClient.create(userSaved.getId());
         // ToDo: send tempPassword via email
         return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
     }
@@ -188,7 +191,7 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
         } catch (Exception e) {
-            throw new UnauthorizedException("El nombre de usuario o la contraseña son incorrectos.");
+            throw new BadCredentialsException("El nombre de usuario o la contraseña son incorrectos.");
         }
 
         user = (User) auth.getPrincipal();
@@ -235,6 +238,13 @@ public class AuthServiceImpl implements AuthService {
         String email = jwtService.extractUsername(accessToken);
         User user = userService.findByEmailOrThrow(email);
         return userMapper.toUserResponseDTO(user);
+    }
+
+    @Override
+    public boolean validateToken(String token) {
+        String username = jwtService.extractUsername(token);
+        UserDetails user = userDetailsService.loadUserByUsername(username);
+        return jwtService.isTokenValid(token, user);
     }
 
     private String generateAndSaveActivationToken(final User user) {

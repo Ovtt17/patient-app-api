@@ -2,6 +2,7 @@ package com.patientapp.patientservice.modules.patient.dto;
 
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Builder
@@ -10,6 +11,11 @@ public record PatientResponseDTO(
         String firstName,
         String lastName,
         String email,
-        String phone
+        String phone,
+        UUID userId,
+        Double weight,
+        Double height,
+        LocalDate birthDate,
+        String notes
 ) {
 }

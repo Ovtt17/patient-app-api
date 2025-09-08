@@ -28,10 +28,8 @@ public class PatientController {
     @Operation(summary = "Crear un nuevo paciente")
     @PostMapping
     @Transactional
-    public ResponseEntity<UUID> create(
-            @Valid @RequestBody PatientRequestDTO request
-    ) {
-        var patientId = patientService.create(request);
+    public ResponseEntity<UUID> create(@RequestBody UUID userId) {
+        var patientId = patientService.create(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(patientId);
     }
 
@@ -57,6 +55,14 @@ public class PatientController {
             @Parameter(description = "UUID del paciente") @PathVariable UUID id
     ) {
         return ResponseEntity.ok(patientService.getById(id));
+    }
+
+    @Operation(summary = "Obtener un paciente por ID de usuario")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<PatientResponseDTO> getByUserId(
+            @Parameter(description = "UUID del usuario") @PathVariable UUID userId
+    ) {
+        return ResponseEntity.ok(patientService.getByUserId(userId));
     }
 
     @Operation(summary = "Actualizar información de un paciente")

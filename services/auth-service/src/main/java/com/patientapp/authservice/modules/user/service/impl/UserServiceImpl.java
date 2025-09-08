@@ -1,7 +1,9 @@
 package com.patientapp.authservice.modules.user.service.impl;
 
+import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.user.entity.User;
 import com.patientapp.authservice.common.handler.exceptions.UserNotFoundException;
+import com.patientapp.authservice.modules.user.mapper.UserMapper;
 import com.patientapp.authservice.modules.user.repository.UserRepository;
 import com.patientapp.authservice.modules.user.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-
+    private final UserMapper userMapper;
 
     @Override
     public boolean existsByEmail(String email) {
@@ -24,6 +26,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public UserResponseDTO getUserById(UUID id) {
+        User user = findByIdOrThrow(id);
+        return userMapper.toUserResponseDTO(user);
     }
 
     @Override

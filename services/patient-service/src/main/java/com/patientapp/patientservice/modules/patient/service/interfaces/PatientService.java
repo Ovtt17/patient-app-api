@@ -14,10 +14,10 @@ import java.util.UUID;
 public interface PatientService {
     /**
      * Creates a new patient.
-     * @param request DTO containing patient data.
+     * @param userId UUID of the user associated with the patient.
      * @return UUID of the created patient.
      */
-    UUID create(PatientRequestDTO request);
+    UUID create(UUID userId);
 
     /**
      * Retrieves a paginated and sorted list of all active patients.
@@ -61,4 +61,11 @@ public interface PatientService {
      * @param id UUID of the patient to deactivate.
      */
     void deactivate(UUID id);
+
+    /**
+     * Retrieves a patient by their associated user ID.
+     * @param userId UUID of the user.
+     * @return PatientResponseDTO of the found patient.
+     */
+    PatientResponseDTO getByUserId(UUID userId);
 }

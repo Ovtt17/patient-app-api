@@ -41,6 +41,7 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/activate-account",
                                 "/auth/refresh",
+                                "/auth/validate",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**"
                         )
@@ -54,6 +55,9 @@ public class SecurityConfig {
                                 "/auth/activate-account",
                                 "/auth/refresh",
                                 "/auth/logout"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/auth/validate"
                         ).permitAll()
                         // Endpoints públicos de Swagger/OpenAPI
                         .requestMatchers(

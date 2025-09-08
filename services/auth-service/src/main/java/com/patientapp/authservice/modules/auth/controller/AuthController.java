@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -132,5 +133,13 @@ public class AuthController {
             HttpServletResponse response
     ) {
         return ResponseEntity.ok(authService.logout(response));
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        boolean valid = authService.validateToken(token);
+        if (!valid) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido o expirado");
+        return ResponseEntity.ok("Token válido");
     }
 }
