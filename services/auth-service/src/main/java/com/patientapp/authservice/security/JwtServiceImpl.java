@@ -1,5 +1,6 @@
 package com.patientapp.authservice.security;
 
+import com.patientapp.authservice.modules.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -76,6 +77,13 @@ public class JwtServiceImpl implements JwtService {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
+
+        String userId = null;
+        if (userDetails instanceof User user) {
+            userId = user.getId().toString();
+        }
+
+        extraClaims.put("userId", userId);
 
         return Jwts.builder()
                 .claims(extraClaims)
