@@ -31,11 +31,11 @@ public class RouteValidator {
     public Predicate<ServerHttpRequest> isSecured =
             request -> openApiEndpoints
                     .stream()
-                    .noneMatch(uri -> request.getURI().getPath().startsWith(uri));
+                    .noneMatch(uri -> request.getURI().getPath().equals(uri) || request.getURI().getPath().startsWith(uri + "/"));
 
     // Optional helper method to check if the route is public
     public boolean isPublic(ServerHttpRequest request) {
         return openApiEndpoints.stream()
-                .anyMatch(uri -> request.getURI().getPath().startsWith(uri));
+                .anyMatch(uri -> request.getURI().getPath().equals(uri) || request.getURI().getPath().startsWith(uri + "/"));
     }
 }
