@@ -8,6 +8,10 @@ CREATE TABLE doctor_specialties
 CREATE TABLE doctors
 (
     id                 BINARY(16)   NOT NULL,
+    created_by         VARCHAR(255) NOT NULL,
+    last_modified_by   VARCHAR(255) NULL,
+    created_date       datetime     NOT NULL,
+    last_modified_date datetime     NULL,
     medical_license    VARCHAR(255) NULL,
     office_number      VARCHAR(255) NULL,
     active             BIT(1)       NOT NULL,
