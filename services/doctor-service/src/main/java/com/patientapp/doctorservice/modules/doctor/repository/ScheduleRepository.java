@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,8 +29,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     boolean existsConflict(
             @Param("doctorId") UUID doctorId,
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
-            @Param("startTime") Instant startTime,
-            @Param("endTime") Instant endTime,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
             @Param("scheduleId") Integer scheduleId
     );
 }

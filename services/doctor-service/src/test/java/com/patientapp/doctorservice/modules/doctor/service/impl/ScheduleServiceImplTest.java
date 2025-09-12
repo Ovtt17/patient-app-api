@@ -17,8 +17,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
-import java.util.*;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -41,8 +43,8 @@ class ScheduleServiceImplTest {
     private ScheduleResponseDTO responseDTO;
     private AutoCloseable mocks;
 
-    private Instant startInstant;
-    private Instant endInstant;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     @BeforeEach
     void setUp() {
@@ -53,20 +55,20 @@ class ScheduleServiceImplTest {
         doctor.setUserId(UUID.randomUUID());
         doctor.setZoneId("America/Lima");
 
-        startInstant = Instant.parse("2025-09-12T09:00:00Z");
-        endInstant = Instant.parse("2025-09-12T12:00:00Z");
+        startTime = LocalTime.of(9, 0);
+        endTime = LocalTime.of(12, 0);
 
         schedule = new Schedule();
         schedule.setId(1);
         schedule.setDoctor(doctor);
         schedule.setDayOfWeek(DayOfWeek.MONDAY);
-        schedule.setStartTime(startInstant);
-        schedule.setEndTime(endInstant);
+        schedule.setStartTime(startTime);
+        schedule.setEndTime(endTime);
 
         requestDTO = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
-                startInstant,
-                endInstant,
+                startTime,
+                endTime,
                 doctor.getId()
         );
 
@@ -74,8 +76,8 @@ class ScheduleServiceImplTest {
                 .id(1)
                 .doctorId(doctor.getId())
                 .dayOfWeek(DayOfWeek.MONDAY)
-                .startTime(startInstant)
-                .endTime(endInstant)
+                .startTime(startTime)
+                .endTime(endTime)
                 .build();
     }
 
@@ -108,8 +110,8 @@ class ScheduleServiceImplTest {
     void createSchedule_invalidTimes_throwsException() {
         ScheduleRequestDTO invalidRequest = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
-                endInstant,
-                startInstant,
+                endTime,
+                startTime,
                 doctor.getId()
         );
         assertThrows(IllegalArgumentException.class, () -> scheduleService.create(invalidRequest));
@@ -185,8 +187,8 @@ class ScheduleServiceImplTest {
         when(scheduleRepository.findById(anyInt())).thenReturn(Optional.of(schedule));
         ScheduleRequestDTO invalidRequest = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
-                endInstant,
-                startInstant,
+                endTime,
+                startTime,
                 doctor.getId()
         );
         assertThrows(IllegalArgumentException.class, () -> scheduleService.update(1, invalidRequest));
