@@ -20,6 +20,8 @@ public enum BusinessErrorCodes {
     SPECIALTY_NOT_FOUND(603, NOT_FOUND, "Especialidad no encontrada."),
     SPECIALTY_ALREADY_EXISTS(604, CONFLICT, "La especialidad ya existe."),
     EMAIL_ALREADY_IN_USE(605, CONFLICT, "El correo electrónico ya está en uso."),
+    SCHEDULE_NOT_FOUND(606, NOT_FOUND, "Horario no encontrado."),
+    SCHEDULE_CONFLICT(607, CONFLICT, "El horario proporcionado entra en conflicto con un horario existente."),
 
     ILLEGAL_ARGUMENT (399, BAD_REQUEST, "Argumento ilegal proporcionado. Verifica la información e intenta nuevamente."),
     USER_UNAUTHORIZED(401, UNAUTHORIZED, "No tienes permiso para realizar esta acción. Contacta al administrador si crees que esto es un error."),

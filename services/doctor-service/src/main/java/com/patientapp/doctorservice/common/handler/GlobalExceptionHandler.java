@@ -181,4 +181,32 @@ public class GlobalExceptionHandler {
                                 .build()
                 );
     }
+
+    // horario no encontrado
+    @ExceptionHandler(ScheduleNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleScheduleNotFoundException(ScheduleNotFoundException e) {
+        return ResponseEntity
+                .status(SCHEDULE_NOT_FOUND.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(SCHEDULE_NOT_FOUND.getCode())
+                                .businessErrorDescription(SCHEDULE_NOT_FOUND.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
+
+    // Conflicto de horario
+    @ExceptionHandler(ScheduleConflictException.class)
+    public ResponseEntity<ExceptionResponse> handleScheduleConflictException(ScheduleConflictException e) {
+        return ResponseEntity
+                .status(SCHEDULE_CONFLICT.getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(SCHEDULE_CONFLICT.getCode())
+                                .businessErrorDescription(SCHEDULE_CONFLICT.getDescription())
+                                .error(e.getMessage())
+                                .build()
+                );
+    }
 }
