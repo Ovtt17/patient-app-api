@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -38,9 +39,13 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public UUID create(UUID userId) {
-        Doctor doctor = new Doctor();
-        doctor.setUserId(userId);
-        doctor.setActive(true);
+        // TODO: Use actual zone from doctor's profile or request
+        ZoneId zone = ZoneId.of("America/Managua");
+        Doctor doctor = Doctor.builder()
+                .userId(userId)
+                .zoneId(zone.getId())
+                .active(true)
+                .build();
         return doctorRepository.save(doctor).getId();
     }
 
