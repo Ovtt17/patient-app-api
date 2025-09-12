@@ -29,8 +29,8 @@ CREATE TABLE schedules
     last_modified_date datetime           NULL,
     doctor_id          BINARY(16)         NOT NULL,
     day_of_week        VARCHAR(255)       NOT NULL,
-    start_time         datetime           NOT NULL,
-    end_time           datetime           NOT NULL,
+    start_time         time               NOT NULL,
+    end_time           time               NOT NULL,
     CONSTRAINT pk_schedules PRIMARY KEY (id)
 );
 

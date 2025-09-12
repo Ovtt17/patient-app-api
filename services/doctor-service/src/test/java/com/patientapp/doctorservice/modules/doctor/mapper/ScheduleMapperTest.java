@@ -8,10 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
+import java.time.LocalTime;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ScheduleMapperTest {
     private ScheduleMapper mapper;
@@ -32,8 +32,8 @@ class ScheduleMapperTest {
 
         requestDTO = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
-                Instant.parse("2025-09-15T15:00:00Z"),
-                Instant.parse("2025-09-15T23:00:00Z"),
+                LocalTime.of(9,0),
+                LocalTime.of(17,0),
                 doctor.getId()
         );
     }
@@ -41,7 +41,6 @@ class ScheduleMapperTest {
     @Test
     void testToEntity() {
         Schedule schedule = mapper.toEntity(requestDTO, doctor);
-
         assertEquals(doctor, schedule.getDoctor());
         assertEquals(requestDTO.startTime(), schedule.getStartTime());
         assertEquals(requestDTO.endTime(), schedule.getEndTime());
@@ -52,17 +51,17 @@ class ScheduleMapperTest {
         Schedule schedule = Schedule.builder()
                 .id(1)
                 .doctor(doctor)
-                .startTime(Instant.parse("2025-09-16T14:00:00Z"))
-                .endTime(Instant.parse("2025-09-16T22:00:00Z"))
+                .dayOfWeek(DayOfWeek.TUESDAY)
+                .startTime(LocalTime.of(8,0))
+                .endTime(LocalTime.of(16,0))
                 .build();
 
         ScheduleResponseDTO responseDTO = mapper.toResponseDTO(schedule);
-
         assertEquals(schedule.getId(), responseDTO.id());
         assertEquals(schedule.getDoctor().getId(), responseDTO.doctorId());
+        assertEquals(schedule.getDayOfWeek(), responseDTO.dayOfWeek());
         assertEquals(schedule.getStartTime(), responseDTO.startTime());
         assertEquals(schedule.getEndTime(), responseDTO.endTime());
-        assertEquals(schedule.getDoctor().getZoneId(), responseDTO.zoneId());
     }
 
     @Test
@@ -70,12 +69,13 @@ class ScheduleMapperTest {
         Schedule schedule = Schedule.builder()
                 .id(2)
                 .doctor(doctor)
-                .startTime(Instant.parse("2025-09-15T10:00:00Z"))
-                .endTime(Instant.parse("2025-09-15T18:00:00Z"))
+                .dayOfWeek(DayOfWeek.WEDNESDAY)
+                .startTime(LocalTime.of(10,0))
+                .endTime(LocalTime.of(18,0))
                 .build();
 
         mapper.updateEntity(schedule, requestDTO);
-
+        assertEquals(requestDTO.dayOfWeek(), schedule.getDayOfWeek());
         assertEquals(requestDTO.startTime(), schedule.getStartTime());
         assertEquals(requestDTO.endTime(), schedule.getEndTime());
     }

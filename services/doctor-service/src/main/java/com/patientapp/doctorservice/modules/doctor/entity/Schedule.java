@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -29,10 +29,10 @@ public class Schedule extends BaseAuditingEntity {
     private DayOfWeek dayOfWeek;
 
     @Column(nullable = false)
-    private Instant startTime;
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private Instant endTime;
+    private LocalTime endTime;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "doctor_id")

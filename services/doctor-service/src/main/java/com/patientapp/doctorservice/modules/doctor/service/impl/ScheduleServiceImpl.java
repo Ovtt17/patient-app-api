@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -142,7 +142,7 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @param endTime   The end time
      * @throws IllegalArgumentException if the start time is not before the end time
      */
-    private void validateTimes(Instant startTime, Instant endTime) {
+    private void validateTimes(LocalTime startTime, LocalTime endTime) {
         if (startTime.isAfter(endTime) || startTime.equals(endTime)) {
             throw new IllegalArgumentException("La hora de inicio debe ser menor que la hora de fin");
         }
