@@ -16,9 +16,22 @@ CREATE TABLE doctors
     office_number      VARCHAR(255) NULL,
     active             BIT(1)       NOT NULL,
     user_id            BINARY(16)   NOT NULL,
-    created_date       datetime     NOT NULL,
-    last_modified_date datetime     NULL,
+    zone_id            VARCHAR(255) NOT NULL,
     CONSTRAINT pk_doctors PRIMARY KEY (id)
+);
+
+CREATE TABLE schedules
+(
+    id                 INT AUTO_INCREMENT NOT NULL,
+    created_by         VARCHAR(255)       NOT NULL,
+    last_modified_by   VARCHAR(255)       NULL,
+    created_date       datetime           NOT NULL,
+    last_modified_date datetime           NULL,
+    doctor_id          BINARY(16)         NOT NULL,
+    day_of_week        VARCHAR(255)       NOT NULL,
+    start_time         time               NOT NULL,
+    end_time           time               NOT NULL,
+    CONSTRAINT pk_schedules PRIMARY KEY (id)
 );
 
 CREATE TABLE specialties
@@ -37,6 +50,9 @@ ALTER TABLE doctors
 
 ALTER TABLE specialties
     ADD CONSTRAINT uc_specialties_name UNIQUE (name);
+
+ALTER TABLE schedules
+    ADD CONSTRAINT FK_SCHEDULES_ON_DOCTOR FOREIGN KEY (doctor_id) REFERENCES doctors (id);
 
 ALTER TABLE doctor_specialties
     ADD CONSTRAINT fk_docspe_on_doctor FOREIGN KEY (doctor_id) REFERENCES doctors (id);
