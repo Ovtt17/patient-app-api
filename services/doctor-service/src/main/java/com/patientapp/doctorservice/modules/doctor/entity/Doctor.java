@@ -35,6 +35,9 @@ public class Doctor extends BaseAuditingEntity {
     @Column(nullable = false, unique = true)
     private UUID userId;
 
+    @Column(nullable = false)
+    private String zoneId;
+
     @ManyToMany
     @JoinTable(
             name = "doctor_specialties",
