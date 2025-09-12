@@ -41,6 +41,11 @@ spring:
                           predicates:
                             - Path=/api/v1/specialties/**
 
+                        - id: doctor-service-schedules
+                          uri: lb://DOCTOR-SERVICE
+                          predicates:
+                            - Path=/api/v1/schedules/**
+
                         # Endpoints normales de patient
                         -   id: patient-service
                             uri: lb://PATIENT-SERVICE
