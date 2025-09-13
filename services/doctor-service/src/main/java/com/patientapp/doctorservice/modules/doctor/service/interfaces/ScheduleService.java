@@ -53,6 +53,19 @@ public interface ScheduleService {
     /**
      * Gets all schedules for a doctor by their unique ID.
      * <p>
+     * Returns all schedules associated with the specified doctor. Throws an exception if the doctor has no schedules.
+     * </p>
+     *
+     * @param doctorId UUID of the doctor
+     * @return List of Schedule entities for the doctor
+     * @throws DoctorNotFoundException if the doctor does not exist
+     * @throws ScheduleNotFoundException if the doctor has no schedules
+     */
+    List<Schedule> getAllEntitiesByDoctorIdOrThrow(UUID doctorId);
+
+    /**
+     * Gets all schedules for a doctor by their unique ID.
+     * <p>
      * Returns all schedules associated with the specified doctor. May be empty if the doctor has no schedules.
      * </p>
      *

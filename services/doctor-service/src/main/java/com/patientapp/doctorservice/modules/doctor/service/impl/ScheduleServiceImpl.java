@@ -72,6 +72,15 @@ public class ScheduleServiceImpl implements ScheduleService {
      * {@inheritDoc}
      */
     @Override
+    public List<Schedule> getAllEntitiesByDoctorIdOrThrow(UUID doctorId) {
+        Doctor doctor = doctorService.getEntityByIdOrThrow(doctorId);
+        return scheduleRepository.findByDoctor(doctor);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<ScheduleResponseDTO> getByDoctorId(UUID doctorId) {
         Doctor doctor = doctorService.getEntityByIdOrThrow(doctorId);
         List<Schedule> schedules = scheduleRepository.findByDoctor(doctor);
