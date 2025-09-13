@@ -6,17 +6,16 @@ spring:
                     discovery:
                         locator:
                             enabled: true
-                    routes:
-                        # Endpoints normales de auth
+                    routes: # Endpoints normales de auth
                         -   id: auth-service
                             uri: lb://AUTH-SERVICE
                             predicates:
                                 - Path=/api/v1/auth/**
 
-                        - id: auth-service-csrf
-                          uri: lb://AUTH-SERVICE
-                          predicates:
-                            - Path=/api/v1/csrf/**
+                        -   id: auth-service-csrf
+                            uri: lb://AUTH-SERVICE
+                            predicates:
+                                - Path=/api/v1/csrf/**
 
                         # Inicio de OAuth2
                         -   id: auth-service-oauth-start
@@ -36,15 +35,25 @@ spring:
                             predicates:
                                 - Path=/api/v1/doctors/**
 
-                        - id: doctor-service-specialties
-                          uri: lb://DOCTOR-SERVICE
-                          predicates:
-                            - Path=/api/v1/specialties/**
+                        -   id: doctor-service-specialties
+                            uri: lb://DOCTOR-SERVICE
+                            predicates:
+                                - Path=/api/v1/specialties/**
 
-                        - id: doctor-service-schedules
-                          uri: lb://DOCTOR-SERVICE
-                          predicates:
-                            - Path=/api/v1/schedules/**
+                        -   id: doctor-service-schedules
+                            uri: lb://DOCTOR-SERVICE
+                            predicates:
+                                - Path=/api/v1/schedules/**
+
+                        -   id: doctor-service-unavailabilities
+                            uri: lb://DOCTOR-SERVICE
+                            predicates:
+                                - Path=/api/v1/doctor-unavailabilities/**
+
+                        -   id: doctor-service-availability
+                            uri: lb://DOCTOR-SERVICE
+                            predicates:
+                                - Path=/api/v1/doctor-availability/**
 
                         # Endpoints normales de patient
                         -   id: patient-service
