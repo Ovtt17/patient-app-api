@@ -38,12 +38,4 @@ public interface DoctorUnavailabilityService {
      * @param id the ID of the unavailability record
      */
     void delete(Integer id);
-
-    /**
-     * Retrieves all unavailability entities for a specific doctor by their ID or throws an exception if none found.
-     * @param doctorId the UUID of the doctor
-     * @return a list of DoctorUnavailability entities
-     * @throws RuntimeException if no unavailability records are found for the doctor
-     */
-    List<DoctorUnavailability> getAllByDoctorIdOrThrow(UUID doctorId);
 }

@@ -81,13 +81,4 @@ public class DoctorUnavailabilityServiceImpl implements DoctorUnavailabilityServ
                 .orElseThrow(() -> new ScheduleNotFoundException("Unavailability not found"));
         repository.delete(entity);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<DoctorUnavailability> getAllByDoctorIdOrThrow(UUID doctorId) {
-        Doctor doctor = doctorService.getEntityByIdOrThrow(doctorId);
-         return repository.findByDoctor(doctor);
-    }
 }
