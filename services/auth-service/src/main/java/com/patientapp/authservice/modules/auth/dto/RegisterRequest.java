@@ -1,9 +1,7 @@
 package com.patientapp.authservice.modules.auth.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.patientapp.authservice.modules.user.enums.Gender;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 @Builder
@@ -33,6 +31,9 @@ public record RegisterRequest(
                 message = "El número de teléfono debe tener hasta 8 dígitos."
         )
         String phone,
+
+        @NotNull(message = "El género es obligatorio")
+        Gender gender,
 
         @NotBlank(message = "La contraseña es obligatoria")
         @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")

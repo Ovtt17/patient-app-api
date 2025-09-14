@@ -1,27 +1,27 @@
 package com.patientapp.authservice.modules.auth.service.impl;
 
-import com.patientapp.authservice.modules.doctor.client.DoctorClient;
-import com.patientapp.authservice.modules.doctor.dto.DoctorCreatedDTO;
-import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
-import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
-import com.patientapp.authservice.modules.auth.dto.LoginRequest;
-import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
-import com.patientapp.authservice.modules.patient.client.PatientClient;
-import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
-import com.patientapp.authservice.modules.token.entity.Token;
-import com.patientapp.authservice.modules.user.entity.User;
-import com.patientapp.authservice.modules.user.enums.AuthProvider;
 import com.patientapp.authservice.common.handler.exceptions.TokenNotFoundException;
 import com.patientapp.authservice.common.handler.exceptions.UnauthorizedException;
-import com.patientapp.authservice.modules.user.mapper.UserMapper;
-import com.patientapp.authservice.modules.token.repository.TokenRepository;
-import com.patientapp.authservice.modules.auth.service.interfaces.AuthService;
-import com.patientapp.authservice.security.JwtService;
-import com.patientapp.authservice.modules.role.service.interfaces.RoleService;
-import com.patientapp.authservice.modules.user.service.interfaces.UserService;
 import com.patientapp.authservice.common.utils.CookieUtil;
 import com.patientapp.authservice.common.utils.NullSafe;
 import com.patientapp.authservice.common.utils.SecurityUtil;
+import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
+import com.patientapp.authservice.modules.auth.dto.LoginRequest;
+import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
+import com.patientapp.authservice.modules.auth.service.interfaces.AuthService;
+import com.patientapp.authservice.modules.doctor.client.DoctorClient;
+import com.patientapp.authservice.modules.doctor.dto.DoctorCreatedDTO;
+import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.modules.patient.client.PatientClient;
+import com.patientapp.authservice.modules.role.service.interfaces.RoleService;
+import com.patientapp.authservice.modules.token.entity.Token;
+import com.patientapp.authservice.modules.token.repository.TokenRepository;
+import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
+import com.patientapp.authservice.modules.user.entity.User;
+import com.patientapp.authservice.modules.user.enums.AuthProvider;
+import com.patientapp.authservice.modules.user.mapper.UserMapper;
+import com.patientapp.authservice.modules.user.service.interfaces.UserService;
+import com.patientapp.authservice.security.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -83,6 +83,7 @@ public class AuthServiceImpl implements AuthService {
                 .username(NullSafe.ifNotBlankOrNull(request.username()))
                 .email(NullSafe.ifNotBlankOrNull(request.email()))
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
+                .gender(request.gender())
                 .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
                 .enabled(true) // ToDo: set to false for email verification
@@ -113,6 +114,7 @@ public class AuthServiceImpl implements AuthService {
                 .username(NullSafe.ifNotBlankOrNull(request.username()))
                 .email(NullSafe.ifNotBlankOrNull(request.email()))
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
+                .gender(request.gender())
                 .accountLocked(false)
                 .enabled(true) // enabled true because doctor will change the password at first login
                 .password(passwordEncoder.encode(tempPassword))
@@ -277,7 +279,6 @@ public class AuthServiceImpl implements AuthService {
      * @return A temporary password string of 8 characters.
      */
     private String generateTemporaryPassword() {
-        // 🔹 Genera una contraseña de 10 caracteres segura
         return UUID.randomUUID().toString()
                 .replace("-", "")
                 .substring(0, 8);

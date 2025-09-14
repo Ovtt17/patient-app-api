@@ -1,8 +1,9 @@
 package com.patientapp.authservice.modules.user.entity;
 
-import com.patientapp.authservice.modules.user.enums.AuthProvider;
 import com.patientapp.authservice.modules.role.entity.Role;
 import com.patientapp.authservice.modules.token.entity.Token;
+import com.patientapp.authservice.modules.user.enums.AuthProvider;
+import com.patientapp.authservice.modules.user.enums.Gender;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -42,6 +43,9 @@ public class User implements UserDetails, Principal {
 
     @Column(unique = true, nullable = false)
     private String username;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column
     private String password;
