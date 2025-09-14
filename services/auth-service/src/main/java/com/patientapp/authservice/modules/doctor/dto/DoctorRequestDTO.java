@@ -1,9 +1,7 @@
 package com.patientapp.authservice.modules.doctor.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.patientapp.authservice.modules.user.enums.Gender;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -44,6 +42,10 @@ public record DoctorRequestDTO(
                 message = "El número de teléfono debe tener hasta 8 dígitos."
         )
         String phone,
+
+        @NotNull(message = "El género es obligatorio")
+        Gender gender,
+
         UUID userId
 ) {
 }
