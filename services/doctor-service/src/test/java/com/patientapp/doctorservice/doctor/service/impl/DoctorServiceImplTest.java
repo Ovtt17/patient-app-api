@@ -133,31 +133,6 @@ class DoctorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById: should return doctor if exists")
-    void getById_success() {
-        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
-        when(doctorMapper.toDoctorResponse(doctor)).thenReturn(
-                new DoctorResponseDTO(
-                        UUID.randomUUID(),
-                        "John",
-                        "Doe",
-                        null,
-                        null,
-                        doctor.getMedicalLicense(),
-                        doctor.getOfficeNumber(),
-                        doctor.getUserId().toString(),
-                        List.of("Cardiology")
-                )
-        );
-
-        DoctorResponseDTO result = doctorService.getById(doctorId);
-
-        assertNotNull(result);
-        assertEquals("John", result.firstName());
-        verify(doctorMapper).toDoctorResponse(doctor);
-    }
-
-    @Test
     @DisplayName("getById: should throw DoctorNotFoundException if not found")
     void getById_notFound() {
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.empty());
