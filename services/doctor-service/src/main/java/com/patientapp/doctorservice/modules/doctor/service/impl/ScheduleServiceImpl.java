@@ -10,9 +10,9 @@ import com.patientapp.doctorservice.modules.doctor.mapper.ScheduleMapper;
 import com.patientapp.doctorservice.modules.doctor.repository.ScheduleRepository;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.ScheduleService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;

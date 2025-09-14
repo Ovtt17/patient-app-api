@@ -10,13 +10,13 @@ import com.patientapp.patientservice.modules.patient.entity.Patient;
 import com.patientapp.patientservice.modules.patient.mapper.PatientMapper;
 import com.patientapp.patientservice.modules.patient.repository.PatientRepository;
 import com.patientapp.patientservice.modules.patient.service.interfaces.PatientService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;

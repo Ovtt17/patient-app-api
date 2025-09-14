@@ -10,9 +10,9 @@ import com.patientapp.doctorservice.modules.doctor.mapper.DoctorUnavailabilityMa
 import com.patientapp.doctorservice.modules.doctor.repository.DoctorUnavailabilityRepository;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorUnavailabilityService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
