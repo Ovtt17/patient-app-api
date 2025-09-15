@@ -7,7 +7,6 @@ import com.patientapp.patientservice.modules.patient.service.interfaces.PatientS
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("patients")
+@RequestMapping("/patients")
 @RequiredArgsConstructor
 @Tag(name = "Paciente", description = "Gestión de pacientes")
 public class PatientController {
@@ -27,7 +26,6 @@ public class PatientController {
 
     @Operation(summary = "Crear un nuevo paciente")
     @PostMapping
-    @Transactional
     public ResponseEntity<UUID> create(@RequestBody UUID userId) {
         var patientId = patientService.create(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(patientId);
@@ -67,7 +65,6 @@ public class PatientController {
 
     @Operation(summary = "Actualizar información de un paciente")
     @PutMapping("/{id}")
-    @Transactional
     public ResponseEntity<PatientResponseDTO> update(
             @Parameter(description = "UUID del paciente") @PathVariable UUID id,
             @Valid @RequestBody PatientRequestDTO request
@@ -78,7 +75,6 @@ public class PatientController {
     @Operation(summary = "Desactivar un paciente")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_DOCTOR')")
-    @Transactional
     public ResponseEntity<?> deactivate(
             @Parameter(description = "UUID del paciente") @PathVariable UUID id
     ) {
