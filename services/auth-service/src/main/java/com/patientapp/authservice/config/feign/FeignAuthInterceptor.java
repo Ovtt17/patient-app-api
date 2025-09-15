@@ -14,7 +14,10 @@ public class FeignAuthInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getCredentials() != null) {
-            template.header(HttpHeaders.AUTHORIZATION, "Bearer " + authentication.getCredentials());
+            Object credentials = authentication.getCredentials();
+            if (credentials instanceof String token && !token.isBlank()) {
+                template.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+            }
         }
     }
 }
