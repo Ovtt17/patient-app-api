@@ -60,6 +60,12 @@ spring:
                             uri: lb://PATIENT-SERVICE
                             predicates:
                                 - Path=/api/v1/patients/**
+
+                        # Endpoints normales de appointment
+                        -   id: appointment-service
+                            uri: lb://APPOINTMENT-SERVICE
+                            predicates:
+                                - Path=/api/v1/appointments/**
 server:
     port: ${GATEWAY_SERVER_PORT}
 
