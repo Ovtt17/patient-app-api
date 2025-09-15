@@ -1,0 +1,36 @@
+spring:
+    mail:
+        host: ${MAIL_HOST}
+        port: ${MAIL_PORT}
+        username: ${EMAIL}
+        password: ${EMAIL_PASSWORD}
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                    connectiontimeout: 5000
+                    timeout: 3000
+                    writetimeout: 5000
+
+    data:
+        mongodb:
+            username: ${NOTIFICATION_SERVICE_MONGODB_USERNAME}
+            password: ${NOTIFICATION_SERVICE_MONGODB_PASSWORD}
+            host: ${NOTIFICATION_SERVICE_MONGODB_HOST}
+            port: ${NOTIFICATION_SERVICE_MONGODB_PORT}
+            database: ${NOTIFICATION_SERVICE_MONGODB_DATABASE}
+            authentication-database: ${NOTIFICATION_SERVICE_MONGODB_AUTH_DB}
+    kafka:
+        consumer:
+            bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+            properties:
+                spring.json.trusted.packages: com.ovett.ecommerce.kafka
+                spring.json.type.mapping: orderConfirmation:com.ovett.ecommerce.kafka.order.OrderConfirmation,paymentConfirmation:com.ovett.ecommerce.kafka.payment.PaymentConfirmation
+            group-id: paymentGroup,orderGroup
+            auto-offset-reset: earliest
+server:
+    port: ${NOTIFICATION_SERVICE_SERVER_PORT}
