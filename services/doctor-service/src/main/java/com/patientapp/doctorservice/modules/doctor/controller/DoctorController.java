@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("doctors")
+@RequestMapping("/doctors")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_DOCTOR')")
 @Tag(name = "Doctor", description = "Gestión de doctores")

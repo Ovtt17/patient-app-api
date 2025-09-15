@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("schedules")
+@RequestMapping("/schedules")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_DOCTOR')")
 @Tag(name = "Horarios", description = "Gestión de horarios de doctores")

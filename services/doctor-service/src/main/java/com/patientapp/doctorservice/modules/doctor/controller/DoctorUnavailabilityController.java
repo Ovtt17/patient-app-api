@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("doctor-unavailabilities")
+@RequestMapping("/doctor-unavailabilities")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_DOCTOR')")
 @Tag(name = "Ausencias", description = "Gestión de ausencias puntuales de doctores")

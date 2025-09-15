@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("doctor-availability")
+@RequestMapping("/doctor-availability")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_DOCTOR')")
 @Tag(name = "Disponibilidad de Doctor", description = "Disponibilidad real de un doctor combinando horarios y ausencias")
