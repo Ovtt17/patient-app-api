@@ -12,6 +12,8 @@ import com.patientapp.authservice.modules.auth.service.interfaces.AuthService;
 import com.patientapp.authservice.modules.doctor.client.DoctorClient;
 import com.patientapp.authservice.modules.doctor.dto.DoctorCreatedDTO;
 import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.modules.notification.NotificationProducer;
+import com.patientapp.authservice.modules.notification.UserCreatedRequest;
 import com.patientapp.authservice.modules.patient.client.PatientClient;
 import com.patientapp.authservice.modules.role.service.interfaces.RoleService;
 import com.patientapp.authservice.modules.token.entity.Token;
@@ -38,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,6 +66,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final DoctorClient doctorClient;
     private final PatientClient patientClient;
+    private final NotificationProducer notificationProducer;
 
     @Value("${application.front-end.url}")
     private String frontendUrl;
@@ -86,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
                 .gender(request.gender())
                 .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
-                .enabled(true) // ToDo: set to false for email verification
+                .enabled(false)
                 .mustChangePassword(false)
                 .provider(AuthProvider.LOCAL)
                 .roles(List.of(patientRole))
@@ -94,8 +97,24 @@ public class AuthServiceImpl implements AuthService {
 
         var userSaved = userService.save(user);
         patientClient.create(userSaved.getId());
-        // ToDo: send token via email
+        notifyUserCreated(userSaved);
         return "Usuario registrado con éxito.";
+    }
+
+    /**
+     * Generates an activation token, saves it, and sends a notification to the user.
+     * @param userSaved the user that was just created
+     */
+    private void notifyUserCreated(User userSaved) {
+        String activationToken = generateAndSaveActivationToken(userSaved);
+        UserCreatedRequest userCreatedRequest = UserCreatedRequest.builder()
+                .userId(userSaved.getId().toString())
+                .firstName(userSaved.getFirstName())
+                .email(userSaved.getEmail())
+                .activationCode(activationToken)
+                .confirmationUrl(frontendUrl + "/activar-cuenta?token=" + activationToken)
+                .build();
+        notificationProducer.sendUserCreatedEvent(userCreatedRequest);
     }
 
     /** {@inheritDoc} */
@@ -168,7 +187,7 @@ public class AuthServiceImpl implements AuthService {
         Token activationToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new TokenNotFoundException("Token no encontrado."));
         if (Instant.now().isAfter(activationToken.getExpiresAt())) {
-            // ToDo: resend token
+            notifyUserCreated(activationToken.getUser());
             throw new RuntimeException("El token ha expirado. Un nuevo token ha sido enviado al mismo correo electrónico");
         }
         User user = userService.findByIdOrThrow(activationToken.getUser().getId());
@@ -255,7 +274,7 @@ public class AuthServiceImpl implements AuthService {
         final var token = Token.builder()
                 .token(generatedToken)
                 .createdAt(Instant.now())
-                .expiresAt(Instant.from(LocalDateTime.now().plusMinutes(15)))
+                .expiresAt(Instant.now().plus(15, ChronoUnit.MINUTES))
                 .user(user)
                 .build();
         tokenRepository.save(token);

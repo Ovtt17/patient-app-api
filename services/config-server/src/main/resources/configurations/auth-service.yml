@@ -18,6 +18,14 @@ spring:
         user: ${AUTH_DB_USERNAME}
         password: ${AUTH_DB_PASSWORD}
         baseline-version: ${FLYWAY_BASELINE_VERSION}
+    kafka:
+        producer:
+            bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+            properties:
+                spring.json.type.mapping:
+                    userCreated:com.patientapp.authservice.modules.notification.UserCreatedRequest
     security:
         oauth2:
             client:

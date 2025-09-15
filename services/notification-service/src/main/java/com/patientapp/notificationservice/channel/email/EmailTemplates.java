@@ -5,8 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum EmailTemplates {
-    EMAIL_VERIFICATION("email-verification.html", "Por favor verifica tu correo electrónico");
-
+    ACCOUNT_ACTIVATION("account-activation.html", "Activación de cuenta");
     @Getter
     private final String template;
     @Getter

@@ -28,9 +28,13 @@ spring:
             key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
             value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
             properties:
-                spring.json.trusted.packages: com.ovett.ecommerce.kafka
-                spring.json.type.mapping: orderConfirmation:com.ovett.ecommerce.kafka.order.OrderConfirmation,paymentConfirmation:com.ovett.ecommerce.kafka.payment.PaymentConfirmation
-            group-id: paymentGroup,orderGroup
+                # Permite todos los eventos de consumers bajo este paquete base
+                spring.json.trusted.packages: com.patientapp.notificationservice.kafka.consumer
+                # Mapeo de eventos a clases
+                spring.json.type.mapping:
+                    userCreated:com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent
+            # Cada microservicio o tipo de evento puede tener su propio group id
+            group-id: authGroup
             auto-offset-reset: earliest
 server:
     port: ${NOTIFICATION_SERVICE_SERVER_PORT}
