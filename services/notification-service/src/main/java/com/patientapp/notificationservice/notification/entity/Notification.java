@@ -1,5 +1,6 @@
 package com.patientapp.notificationservice.notification.entity;
 
+import com.patientapp.notificationservice.kafka.consumer.appointment.AppointmentCreatedEvent;
 import com.patientapp.notificationservice.kafka.consumer.auth.TemporaryPasswordEvent;
 import com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent;
 import com.patientapp.notificationservice.notification.enums.NotificationType;
@@ -23,4 +24,5 @@ public class Notification {
     private boolean sent;
     private UserCreatedEvent userCreatedEvent;
     private TemporaryPasswordEvent temporaryPasswordEvent;
+    private AppointmentCreatedEvent appointmentCreatedEvent;
 }
