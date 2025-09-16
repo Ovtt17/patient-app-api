@@ -25,4 +25,14 @@ public class NotificationProducer {
 
         kafkaTemplate.send(message);
     }
+
+    public void sendTemporaryPasswordEvent(TemporaryPasswordRequest request) {
+        log.info("Sending temporary password event: <{}>", request);
+        Message<TemporaryPasswordRequest> message = MessageBuilder
+                .withPayload(request)
+                .setHeader(TOPIC, "temporary-password-topic")
+                .build();
+
+        kafkaTemplate.send(message);
+    }
 }

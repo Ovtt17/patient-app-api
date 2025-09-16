@@ -1,6 +1,5 @@
 package com.patientapp.authservice.modules.auth.controller;
 
-import com.patientapp.authservice.modules.doctor.dto.DoctorCreatedDTO;
 import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
 import com.patientapp.authservice.modules.auth.dto.LoginRequest;
@@ -46,7 +45,7 @@ public class AuthController {
     @Operation(summary = "Registrar nuevo doctor", description = "Registra un nuevo doctor en el sistema. Se genera un usuario con rol DOCTOR y una contraseña temporal.")
     @PostMapping("/register-doctor")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<DoctorCreatedDTO> registerDoctor(
+    public ResponseEntity<String> registerDoctor(
             @RequestBody @Valid final DoctorRequestDTO request
     ) {
         return ResponseEntity.ok(authService.registerDoctor(request));

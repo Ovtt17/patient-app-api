@@ -32,7 +32,7 @@ spring:
                 spring.json.trusted.packages: com.patientapp.notificationservice.kafka.consumer
                 # Mapeo de eventos a clases
                 spring.json.type.mapping:
-                    userCreated:com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent
+                    userCreated:com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent,temporaryPassword:com.patientapp.notificationservice.kafka.consumer.auth.TemporaryPasswordEvent
             # Cada microservicio o tipo de evento puede tener su propio group id
             group-id: authGroup
             auto-offset-reset: earliest

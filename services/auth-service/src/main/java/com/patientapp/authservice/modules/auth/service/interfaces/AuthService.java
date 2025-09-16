@@ -1,14 +1,13 @@
 package com.patientapp.authservice.modules.auth.service.interfaces;
 
-import com.patientapp.authservice.modules.doctor.dto.DoctorCreatedDTO;
-import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
-import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
-import com.patientapp.authservice.modules.auth.dto.LoginRequest;
-import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
-import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.common.handler.exceptions.MustChangePasswordException;
 import com.patientapp.authservice.common.handler.exceptions.TokenNotFoundException;
 import com.patientapp.authservice.common.handler.exceptions.UnauthorizedException;
+import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
+import com.patientapp.authservice.modules.auth.dto.LoginRequest;
+import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
+import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -37,7 +36,7 @@ public interface AuthService {
      * @return a DTO containing the created doctor's email and a temporary password
      * @throws IllegalArgumentException if a user already exists with the given email or username
      */
-    DoctorCreatedDTO registerDoctor(DoctorRequestDTO request);
+    String registerDoctor(DoctorRequestDTO request);
 
 
     /**
