@@ -5,7 +5,9 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum EmailTemplates {
-    ACCOUNT_ACTIVATION("account-activation.html", "Activación de cuenta");
+    ACCOUNT_ACTIVATION("account-activation.html", "Activación de cuenta"),
+    TEMP_PASSWORD("temporary-password.html", "Contraseña temporal");
+
     @Getter
     private final String template;
     @Getter

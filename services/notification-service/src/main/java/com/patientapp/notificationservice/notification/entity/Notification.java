@@ -1,5 +1,6 @@
 package com.patientapp.notificationservice.notification.entity;
 
+import com.patientapp.notificationservice.kafka.consumer.auth.TemporaryPasswordEvent;
 import com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent;
 import com.patientapp.notificationservice.notification.enums.NotificationType;
 import lombok.*;
@@ -21,4 +22,5 @@ public class Notification {
     private Instant notificationDate;
     private boolean sent;
     private UserCreatedEvent userCreatedEvent;
+    private TemporaryPasswordEvent temporaryPasswordEvent;
 }

@@ -17,4 +17,10 @@ public class AuthEventConsumer {
         log.info("Received user creation event for user: {}", event.email());
         authNotificationHandler.handleUserCreated(event);
     }
+
+    @KafkaListener(topics = "temporary-password-topic", groupId = "authGroup")
+    public void consumeTemporaryPasswordEvent(TemporaryPasswordEvent event) {
+        log.info("Received temporary password event for email: {}", event.email());
+        authNotificationHandler.handleTemporaryPassword(event);
+    }
 }

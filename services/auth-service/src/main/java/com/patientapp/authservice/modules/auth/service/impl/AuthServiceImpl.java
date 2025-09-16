@@ -10,8 +10,8 @@ import com.patientapp.authservice.modules.auth.dto.LoginRequest;
 import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
 import com.patientapp.authservice.modules.auth.service.interfaces.AuthService;
 import com.patientapp.authservice.modules.doctor.client.DoctorClient;
-import com.patientapp.authservice.modules.doctor.dto.DoctorCreatedDTO;
 import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
+import com.patientapp.authservice.modules.notification.TemporaryPasswordRequest;
 import com.patientapp.authservice.modules.notification.NotificationProducer;
 import com.patientapp.authservice.modules.notification.UserCreatedRequest;
 import com.patientapp.authservice.modules.patient.client.PatientClient;
@@ -120,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
     /** {@inheritDoc} */
     @Override
     @Transactional
-    public DoctorCreatedDTO registerDoctor(DoctorRequestDTO request) {
+    public String registerDoctor(DoctorRequestDTO request) {
         verifyIfUserExists(request.email(), request.email());
 
         String tempPassword = generateTemporaryPassword();
@@ -145,8 +145,15 @@ public class AuthServiceImpl implements AuthService {
         var userSaved = userService.save(user);
 
         doctorClient.create(userSaved.getId());
-        // ToDo: send tempPassword via email
-        return new DoctorCreatedDTO(userSaved.getEmail(), tempPassword);
+        notificationProducer.sendTemporaryPasswordEvent(
+                TemporaryPasswordRequest.builder()
+                        .firstName(userSaved.getFirstName())
+                        .email(userSaved.getEmail())
+                        .temporaryPassword(tempPassword)
+                        .loginUrl(frontendUrl + "/login")
+                        .build()
+        );
+        return "Doctor registrado con éxito. La contraseña temporal ha sido enviada al correo electrónico.";
     }
 
     /** {@inheritDoc} */
