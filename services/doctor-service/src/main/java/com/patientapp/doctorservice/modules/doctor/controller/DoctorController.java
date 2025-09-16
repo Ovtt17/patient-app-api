@@ -20,7 +20,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/doctors")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_DOCTOR')")
 @Tag(name = "Doctor", description = "Gestión de doctores")
 public class DoctorController {
 
@@ -69,6 +68,7 @@ public class DoctorController {
 
     @Operation(summary = "Actualizar información de un doctor")
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @Transactional
     public ResponseEntity<DoctorResponseDTO> update(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id,

@@ -15,6 +15,7 @@ public record DoctorResponseDTO(
         String medicalLicense,
         String officeNumber,
         String userId,
+        String zoneId,
         List<String> specialties
 ) {
 }
