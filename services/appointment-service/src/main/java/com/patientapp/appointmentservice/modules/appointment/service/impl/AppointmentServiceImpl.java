@@ -9,6 +9,12 @@ import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentSt
 import com.patientapp.appointmentservice.modules.appointment.mapper.AppointmentMapper;
 import com.patientapp.appointmentservice.modules.appointment.repository.AppointmentRepository;
 import com.patientapp.appointmentservice.modules.appointment.service.interfaces.AppointmentService;
+import com.patientapp.appointmentservice.modules.doctor.client.DoctorClient;
+import com.patientapp.appointmentservice.modules.doctor.dto.DoctorResponse;
+import com.patientapp.appointmentservice.modules.notification.AppointmentCreatedRequest;
+import com.patientapp.appointmentservice.modules.notification.NotificationProducer;
+import com.patientapp.appointmentservice.modules.patient.client.PatientClient;
+import com.patientapp.appointmentservice.modules.patient.dto.PatientResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +30,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository repository;
     private final AppointmentMapper mapper;
+    private final PatientClient patientClient;
+    private final DoctorClient doctorClient;
+    private final NotificationProducer notificationProducer;
 
     /**
      * {@inheritDoc}
@@ -34,7 +43,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = mapper.toEntity(request);
         appointment.setStatus(AppointmentStatus.PENDIENTE);
         Appointment appointmentSaved = repository.save(appointment);
-        // TODO: Publish event to send notification to doctor and patient
+        PatientResponse patient = patientClient.getById(appointment.getPatientId());
+        DoctorResponse doctor = doctorClient.getById(appointment.getDoctorId());
+
+        var appointCreatedRequest = AppointmentCreatedRequest.builder()
+                .appointmentId(appointmentSaved.getId().toString())
+                .patientName(patient.firstName())
+                .patientEmail(patient.email())
+                .doctorName(doctor.firstName())
+                .doctorEmail(doctor.email())
+                .doctorZoneId(doctor.zoneId())
+                .appointmentDate(appointmentSaved.getAppointmentDate())
+                .build();
+
+        notificationProducer.sendAppointmentCreatedEvent(appointCreatedRequest);
         return mapper.toResponse(appointmentSaved);
     }
 
