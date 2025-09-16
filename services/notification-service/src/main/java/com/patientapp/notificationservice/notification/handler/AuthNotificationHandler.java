@@ -1,6 +1,7 @@
 package com.patientapp.notificationservice.notification.handler;
 
 import com.patientapp.notificationservice.channel.email.AuthEmailService;
+import com.patientapp.notificationservice.kafka.consumer.auth.TemporaryPasswordEvent;
 import com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent;
 import com.patientapp.notificationservice.notification.entity.Notification;
 import com.patientapp.notificationservice.notification.service.NotificationService;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 import static com.patientapp.notificationservice.notification.enums.NotificationType.EMAIL_CONFIRMATION;
+import static com.patientapp.notificationservice.notification.enums.NotificationType.TEMP_PASSWORD;
 
 @Component
 @RequiredArgsConstructor
@@ -29,13 +31,7 @@ public class AuthNotificationHandler {
                 .build();
 
         notificationService.save(notification);
-
-        CompletableFuture<Boolean> sentFuture = authEmailService.sendAccountActivationEmail(
-                event.email(),
-                event.firstName(),
-                event.activationCode(),
-                event.confirmationUrl()
-        );
+        CompletableFuture<Boolean> sentFuture = authEmailService.sendAccountActivationEmail(event);
 
         sentFuture.thenAccept(sent -> {
             if (sent) {
@@ -44,6 +40,28 @@ public class AuthNotificationHandler {
                 log.info("user activation notification sent successfully to {}", event.email());
             } else {
                 log.warn("Failed to send user activation notification to {}", event.email());
+            }
+        });
+    }
+
+    public void handleTemporaryPassword(TemporaryPasswordEvent event) {
+        Notification notification = Notification.builder()
+                .type(TEMP_PASSWORD)
+                .notificationDate(Instant.now())
+                .sent(false)
+                .temporaryPasswordEvent(event)
+                .build();
+
+        notificationService.save(notification);
+        CompletableFuture<Boolean> sentFuture = authEmailService.sendTemporaryPasswordEmail(event);
+
+        sentFuture.thenAccept(sent -> {
+            if (sent) {
+                notification.setSent(true);
+                notificationService.save(notification);
+                log.info("temporary password notification sent successfully to {}", event.email());
+            } else {
+                log.warn("Failed to send temporary password notification to {}", event.email());
             }
         });
     }
