@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -110,6 +111,7 @@ class DoctorServiceImplTest {
                         doctor.getMedicalLicense(),
                         doctor.getOfficeNumber(),
                         doctor.getUserId().toString(),
+                        ZoneId.systemDefault().getId(),
                         List.of("Cardiology")
                 )
         );

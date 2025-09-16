@@ -14,7 +14,7 @@ import static org.springframework.kafka.support.KafkaHeaders.TOPIC;
 @Slf4j
 public class NotificationProducer {
 
-    private final KafkaTemplate<String, UserCreatedRequest> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendUserCreatedEvent(UserCreatedRequest request) {
         log.info("Sending user created event: <{}>", request);

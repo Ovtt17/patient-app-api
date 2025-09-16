@@ -1,12 +1,9 @@
-package com.patientapp.doctorservice.modules.doctor.dto;
-
-import lombok.Builder;
+package com.patientapp.appointmentservice.modules.doctor.dto;
 
 import java.util.List;
 import java.util.UUID;
 
-@Builder
-public record DoctorResponseDTO(
+public record DoctorResponse(
         UUID id,
         String firstName,
         String lastName,

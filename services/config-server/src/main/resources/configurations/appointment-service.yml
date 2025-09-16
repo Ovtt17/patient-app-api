@@ -18,6 +18,13 @@ spring:
         user: ${APPOINTMENT_DB_USERNAME}
         password: ${APPOINTMENT_DB_PASSWORD}
         baseline-version: ${FLYWAY_BASELINE_VERSION}
+    kafka:
+        producer:
+            bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+            properties:
+                spring.json.type.mapping: appointmentCreated:com.patientapp.appointmentservice.modules.notification.AppointmentCreatedRequest
 server:
     port: ${APPOINTMENT_SERVER_PORT}
     servlet:
@@ -29,3 +36,5 @@ application:
             secret-key: ${JWT_SECRET_KEY}
     config:
         auth-url: ${AUTH_SERVICE_URL}
+        doctor-url: ${DOCTOR_SERVICE_URL}
+        patient-url: ${PATIENT_SERVICE_URL}

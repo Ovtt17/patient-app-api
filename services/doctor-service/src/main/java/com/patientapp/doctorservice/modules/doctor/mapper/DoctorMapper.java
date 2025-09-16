@@ -31,6 +31,7 @@ public class DoctorMapper {
                 .medicalLicense(doctor.getMedicalLicense())
                 .officeNumber(doctor.getOfficeNumber())
                 .userId(doctor.getUserId().toString())
+                .zoneId(doctor.getZoneId())
                 .specialties(
                         doctor.getSpecialties() == null ? List.of() :
                                 doctor.getSpecialties().stream()
@@ -50,6 +51,7 @@ public class DoctorMapper {
                 .medicalLicense(doctor.getMedicalLicense())
                 .officeNumber(doctor.getOfficeNumber())
                 .userId(doctor.getUserId().toString())
+                .zoneId(doctor.getZoneId())
                 .specialties(
                         doctor.getSpecialties() == null ? List.of() :
                                 doctor.getSpecialties().stream()
