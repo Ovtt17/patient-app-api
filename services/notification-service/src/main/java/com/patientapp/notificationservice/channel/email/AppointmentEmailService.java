@@ -23,7 +23,7 @@ public class AppointmentEmailService extends EmailService {
     private String formatInstantForZone(Instant instant, String zoneIdStr) {
         ZoneId zone = (zoneIdStr != null) ? ZoneId.of(zoneIdStr) : ZoneId.systemDefault();
         DateTimeFormatter formatter = DateTimeFormatter
-                .ofPattern("dd 'de' MMMM yyyy, HH:mm")
+                .ofPattern("dd 'de' MMMM yyyy, hh:mm a")
                 .withLocale(new Locale("es", "ES"))
                 .withZone(zone);
         return formatter.format(instant);
