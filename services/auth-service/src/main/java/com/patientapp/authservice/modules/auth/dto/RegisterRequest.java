@@ -14,13 +14,6 @@ public record RegisterRequest(
         @Size(min = 3, max = 100, message = "El apellido debe tener entre 3 y 100 caracteres")
         String lastName,
 
-        @Size(
-                min = 3,
-                max = 30,
-                message = "El nombre de usuario debe tener entre 3 y 30 caracteres."
-        )
-        String username,
-
         @Email(message = "El email no es válido")
         @NotBlank(message = "El email es obligatorio")
         String email,
