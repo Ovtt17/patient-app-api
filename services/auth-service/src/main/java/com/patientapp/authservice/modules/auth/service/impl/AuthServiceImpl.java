@@ -91,7 +91,6 @@ public class AuthServiceImpl implements AuthService {
                 .email(NullSafe.ifNotBlankOrNull(request.email()))
                 .username(username)
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
-                .gender(request.gender())
                 .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
                 .enabled(false)
@@ -114,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
                         .build()
         );
         notifyUserCreated(userSaved);
-        return "Usuario registrado con éxito.";
+        return "Te has registrado con éxito. Por favor, revisa tu correo electrónico para activar tu cuenta.";
     }
 
     /**
