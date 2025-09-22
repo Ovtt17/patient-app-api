@@ -1,5 +1,6 @@
 package com.patientapp.authservice.modules.user.service.interfaces;
 
+import com.patientapp.authservice.modules.user.dto.UserRequestDTO;
 import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.user.entity.User;
 
@@ -14,4 +15,5 @@ public interface UserService {
     User findByEmailOrThrow(String email);
     User findByUsernameOrEmailOrThrow(String username, String email);
     boolean existsByPhone(String phone);
+    UserResponseDTO update(UUID userId, UserRequestDTO request);
 }

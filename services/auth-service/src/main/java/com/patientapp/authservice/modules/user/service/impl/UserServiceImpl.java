@@ -1,15 +1,22 @@
 package com.patientapp.authservice.modules.user.service.impl;
 
+import com.patientapp.authservice.common.handler.exceptions.UserNotFoundException;
+import com.patientapp.authservice.common.utils.NullSafe;
+import com.patientapp.authservice.modules.role.entity.Role;
+import com.patientapp.authservice.modules.role.enums.Roles;
+import com.patientapp.authservice.modules.user.dto.UserRequestDTO;
 import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.user.entity.User;
-import com.patientapp.authservice.common.handler.exceptions.UserNotFoundException;
 import com.patientapp.authservice.modules.user.mapper.UserMapper;
 import com.patientapp.authservice.modules.user.repository.UserRepository;
 import com.patientapp.authservice.modules.user.service.interfaces.UserService;
+import com.patientapp.authservice.modules.user.updater.UserRoleUpdater;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -17,6 +24,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final List<UserRoleUpdater> updaters;
 
     @Override
     public boolean existsByEmail(String email) {
@@ -60,5 +68,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByPhone(String phone) {
         return userRepository.existsByPhone(phone.trim());
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO update(UUID userId, UserRequestDTO request) {
+        User user = findByIdOrThrow(userId);
+        user.setFirstName(NullSafe.ifNotBlankOrNull(request.firstName()));
+        user.setLastName(NullSafe.ifNotBlankOrNull(request.lastName()));
+        user.setPhone(NullSafe.ifNotBlankOrNull(request.phone()));
+        user.setGender(request.gender());
+
+        User userUpdated = userRepository.save(user);
+
+        for (Role role : user.getRoles()) {
+            updaters.stream()
+                    .filter(u -> u.supports(Roles.valueOf(role.getName())))
+                    .forEach(u -> u.updateUser(userUpdated, request));
+        }
+
+        return userMapper.toUserResponseDTO(userUpdated);
     }
 }

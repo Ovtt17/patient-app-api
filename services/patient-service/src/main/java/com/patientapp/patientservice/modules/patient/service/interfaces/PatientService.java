@@ -1,9 +1,6 @@
 package com.patientapp.patientservice.modules.patient.service.interfaces;
 
-import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientMedicalInfoDTO;
+import com.patientapp.patientservice.modules.patient.dto.*;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
 
 import java.util.UUID;
@@ -50,6 +47,14 @@ public interface PatientService {
     Patient getEntityByIdOrThrow(UUID id);
 
     /**
+     * Updates the basic information of an existing patient.
+     *
+     * @param userId  UUID of the user associated with the patient.
+     * @param request DTO containing updated basic patient data.
+     */
+    void updateBasicInfo(UUID userId, PatientBasicInfoDTO request);
+
+    /**
      * Updates an existing patient.
      * @param id UUID of the patient to update.
      * @param request DTO containing updated patient data.
@@ -69,4 +74,11 @@ public interface PatientService {
      * @return PatientResponseDTO of the found patient.
      */
     PatientResponseDTO getByUserId(UUID userId);
+
+    /**
+     * Retrieves the Patient entity by user ID or throws an exception if not found.
+     * @param userId UUID of the user.
+     * @return Patient entity.
+     */
+    Patient getEntityByUserIdOrThrow(UUID userId);
 }

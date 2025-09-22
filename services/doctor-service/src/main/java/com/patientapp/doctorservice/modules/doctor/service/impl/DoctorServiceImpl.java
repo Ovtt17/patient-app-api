@@ -2,10 +2,7 @@ package com.patientapp.doctorservice.modules.doctor.service.impl;
 
 import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorMedicalInfoDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.*;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 import com.patientapp.doctorservice.modules.doctor.mapper.DoctorMapper;
 import com.patientapp.doctorservice.modules.doctor.repository.DoctorRepository;
@@ -98,9 +95,23 @@ public class DoctorServiceImpl implements DoctorService {
      * {@inheritDoc}
      */
     @Override
+    public void updateBasicInfo(UUID userId, DoctorBasicInfoDTO request) {
+        Doctor doctor = getEntityByUserIdOrThrow(userId);
+        doctor.setFirstName(request.firstName());
+        doctor.setLastName(request.lastName());
+        doctor.setPhone(request.phone());
+        doctor.setGender(request.gender());
+
+        doctorRepository.save(doctor);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     @Transactional
-    public DoctorResponseDTO updateMedicalInfo(UUID id, DoctorMedicalInfoDTO request) {
-        Doctor doctor = getEntityByIdOrThrow(id);
+    public DoctorResponseDTO updateMedicalInfo(UUID userId, DoctorMedicalInfoDTO request) {
+        Doctor doctor = getEntityByUserIdOrThrow(userId);
         doctor.setMedicalLicense(request.medicalLicense().trim());
         doctor.setOfficeNumber(request.officeNumber().trim());
 
@@ -124,10 +135,14 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public DoctorResponseDTO getByUserId(UUID userId) {
-        Doctor doctor = doctorRepository.findByUserIdAndActiveTrue(userId)
-                .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado para el usuario dado."));
-
+        Doctor doctor = getEntityByUserIdOrThrow(userId);
         return doctorMapper.toDoctorResponse(doctor);
+    }
+
+    @Override
+    public Doctor getEntityByUserIdOrThrow(UUID userId) {
+        return doctorRepository.findByUserIdAndActiveTrue(userId)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado para el usuario dado."));
     }
 
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {
