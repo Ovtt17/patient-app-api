@@ -13,6 +13,5 @@ import java.util.UUID;
 public interface PatientRepository extends JpaRepository<Patient, UUID> {
     Page<Patient> findAllByActiveTrue(Pageable pageable);
     Optional<Patient> findByIdAndActiveTrue(UUID id);
-
-    Optional<Patient> findByUserId(UUID userId);
+    Optional<Patient> findByUserIdAndActiveTrue(UUID userId);
 }

@@ -2,10 +2,7 @@ package com.patientapp.patientservice.modules.patient.service.impl;
 
 import com.patientapp.patientservice.common.handler.exceptions.PatientNotFoundException;
 import com.patientapp.patientservice.common.utils.NullSafe;
-import com.patientapp.patientservice.modules.patient.dto.PatientMedicalInfoDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
+import com.patientapp.patientservice.modules.patient.dto.*;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
 import com.patientapp.patientservice.modules.patient.mapper.PatientMapper;
 import com.patientapp.patientservice.modules.patient.repository.PatientRepository;
@@ -94,8 +91,23 @@ public class PatientServiceImpl implements PatientService {
      */
     @Override
     @Transactional
-    public PatientResponseDTO updateMedicalInfo(UUID id, PatientMedicalInfoDTO request) {
-        Patient patient = getEntityByIdOrThrow(id);
+    public void updateBasicInfo(UUID userId, PatientBasicInfoDTO request) {
+        Patient patient = getEntityByUserIdOrThrow(userId);
+        patient.setFirstName(request.firstName());
+        patient.setLastName(request.lastName());
+        patient.setPhone(request.phone());
+        patient.setGender(request.gender());
+
+        repository.save(patient);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional
+    public PatientResponseDTO updateMedicalInfo(UUID userId, PatientMedicalInfoDTO request) {
+        Patient patient = getEntityByUserIdOrThrow(userId);
         patient.setWeight(request.weight());
         patient.setHeight(request.height());
         patient.setBirthDate(request.birthDate());
@@ -122,9 +134,13 @@ public class PatientServiceImpl implements PatientService {
      */
     @Override
     public PatientResponseDTO getByUserId(UUID userId) {
-        Patient patient = repository.findByUserId(userId)
-                .orElseThrow(() -> new PatientNotFoundException("Paciente no encontrado para el usuario dado."));
-
+        Patient patient = getEntityByUserIdOrThrow(userId);
         return mapper.toPatientResponse(patient);
+    }
+
+    @Override
+    public Patient getEntityByUserIdOrThrow(UUID userId) {
+        return repository.findByUserIdAndActiveTrue(userId)
+                .orElseThrow(() -> new PatientNotFoundException("Paciente no encontrado para el usuario dado."));
     }
 }

@@ -1,9 +1,6 @@
 package com.patientapp.patientservice.modules.patient.controller;
 
-import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
-import com.patientapp.patientservice.modules.patient.dto.PatientMedicalInfoDTO;
+import com.patientapp.patientservice.modules.patient.dto.*;
 import com.patientapp.patientservice.modules.patient.service.interfaces.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,14 +62,24 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getByUserId(userId));
     }
 
+    @PutMapping("/{userId}/basic-info")
+    public ResponseEntity<Void> updateBasicInfo(
+            @Parameter(description = "UUID del paciente")
+            @PathVariable UUID userId,
+            @Valid @RequestBody PatientBasicInfoDTO request
+    ) {
+        patientService.updateBasicInfo(userId, request);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Actualizar información médica del paciente")
-    @PatchMapping("/{id}/medical-info")
+    @PutMapping("/{userId}/medical-info")
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     public ResponseEntity<PatientResponseDTO> updateMedicalInfo(
-            @Parameter(description = "UUID del paciente") @PathVariable UUID id,
+            @Parameter(description = "UUID del usuario") @PathVariable UUID userId,
             @Valid @RequestBody PatientMedicalInfoDTO request
     ) {
-        return ResponseEntity.ok(patientService.updateMedicalInfo(id, request));
+        return ResponseEntity.ok(patientService.updateMedicalInfo(userId, request));
     }
 
     @Operation(summary = "Desactivar un paciente")
