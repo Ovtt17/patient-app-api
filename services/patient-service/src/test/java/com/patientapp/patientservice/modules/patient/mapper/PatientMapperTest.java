@@ -4,6 +4,7 @@ import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
+import com.patientapp.patientservice.modules.patient.enums.Gender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,16 +29,17 @@ class PatientMapperTest {
     }
 
     @Test
-    @DisplayName("toEntity should map all fields and trim notes")
-    void toEntity_mapsFields_andTrimsNotes() {
+    @DisplayName("toEntity should map all fields")
+    void toEntity_mapsFields() {
         UUID userId = UUID.randomUUID();
-        LocalDate birthDate = LocalDate.of(1990, 5, 12);
         PatientRequestDTO request = new PatientRequestDTO(
-                userId,
-                180.5,
-                175.0,
-                birthDate,
-                "   Some notes with spaces   "
+                "John",
+                "Doe",
+                "john.doe@email.com",
+                "12345678",
+                Gender.HOMBRE,
+                null,
+                userId
         );
 
         Patient entity = mapper.toEntity(request);
@@ -46,10 +47,11 @@ class PatientMapperTest {
         assertNotNull(entity);
         assertNull(entity.getId(), "ID should not be set by mapper");
         assertEquals(userId, entity.getUserId());
-        assertEquals(180.5, entity.getWeight());
-        assertEquals(175.0, entity.getHeight());
-        assertEquals(birthDate, entity.getBirthDate());
-        assertEquals("Some notes with spaces", entity.getNotes(), "Notes should be trimmed");
+        assertEquals("John", entity.getFirstName());
+        assertEquals("Doe", entity.getLastName());
+        assertEquals("john.doe@email.com", entity.getEmail());
+        assertEquals("12345678", entity.getPhone());
+        assertEquals(Gender.HOMBRE, entity.getGender());
     }
 
     @Test
@@ -57,15 +59,14 @@ class PatientMapperTest {
     void toPatientResponse_mapsFields() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        LocalDate birthDate = LocalDate.of(1985, 1, 20);
-
         Patient patient = Patient.builder()
                 .id(id)
                 .userId(userId)
-                .weight(150.0)
-                .height(170.0)
-                .birthDate(birthDate)
-                .notes("Some notes")
+                .firstName("Jane")
+                .lastName("Smith")
+                .email("jane.smith@email.com")
+                .phone("87654321")
+                .gender(Gender.MUJER)
                 .build();
 
         PatientResponseDTO dto = mapper.toPatientResponse(patient);
@@ -73,10 +74,11 @@ class PatientMapperTest {
         assertNotNull(dto);
         assertEquals(id, dto.id());
         assertEquals(userId, dto.userId());
-        assertEquals(150.0, dto.weight());
-        assertEquals(170.0, dto.height());
-        assertEquals(birthDate, dto.birthDate());
-        assertEquals("Some notes", dto.notes());
+        assertEquals("Jane", dto.firstName());
+        assertEquals("Smith", dto.lastName());
+        assertEquals("jane.smith@email.com", dto.email());
+        assertEquals("87654321", dto.phone());
+        assertEquals(Gender.MUJER, dto.gender());
     }
 
     @Test
@@ -87,10 +89,11 @@ class PatientMapperTest {
             patients.add(Patient.builder()
                     .id(UUID.randomUUID())
                     .userId(UUID.randomUUID())
-                    .weight(120.0 + i)
-                    .height(160.0 + i)
-                    .birthDate(LocalDate.of(1990, 1, 1).plusDays(i))
-                    .notes("Notes " + i)
+                    .firstName("Name" + i)
+                    .lastName("Last" + i)
+                    .email("email" + i + "@test.com")
+                    .phone("1000000" + i)
+                    .gender(i % 2 == 0 ? Gender.HOMBRE : Gender.MUJER)
                     .build());
         }
         PageRequest pageRequest = PageRequest.of(1, 2); // page index 1
@@ -110,10 +113,11 @@ class PatientMapperTest {
             PatientResponseDTO target = dto.patients().get(i);
             assertEquals(source.getId(), target.id());
             assertEquals(source.getUserId(), target.userId());
-            assertEquals(source.getWeight(), target.weight());
-            assertEquals(source.getHeight(), target.height());
-            assertEquals(source.getBirthDate(), target.birthDate());
-            assertEquals(source.getNotes(), target.notes());
+            assertEquals(source.getFirstName(), target.firstName());
+            assertEquals(source.getLastName(), target.lastName());
+            assertEquals(source.getEmail(), target.email());
+            assertEquals(source.getPhone(), target.phone());
+            assertEquals(source.getGender(), target.gender());
         }
     }
 
@@ -135,18 +139,6 @@ class PatientMapperTest {
     @Nested
     @DisplayName("Edge cases")
     class EdgeCases {
-        @Test
-        @DisplayName("toEntity should throw NullPointerException when notes is null (current implementation)")
-        void toEntity_nullNotes_throwsNpe() {
-            PatientRequestDTO request = new PatientRequestDTO(
-                    UUID.randomUUID(),
-                    100.0,
-                    180.0,
-                    LocalDate.of(2000, 1, 1),
-                    null
-            );
-            assertThrows(NullPointerException.class, () -> mapper.toEntity(request), "Current code calls trim() on notes without null check");
-        }
+        // Remove edge case for notes/null as notes is no longer present
     }
 }
-

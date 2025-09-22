@@ -1,6 +1,5 @@
 package com.patientapp.patientservice.modules.patient.mapper;
 
-import com.patientapp.patientservice.modules.auth.dto.UserResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
@@ -14,21 +13,30 @@ public class PatientMapper {
     public Patient toEntity(PatientRequestDTO request) {
         return Patient.builder()
                 .userId(request.userId())
-                .weight(request.weight())
-                .height(request.height())
-                .birthDate(request.birthDate())
-                .notes(request.notes().trim())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .email(request.email())
+                .phone(request.phone())
+                .gender(request.gender())
+                .profilePicture(request.profilePictureUrl())
+                .active(true)
                 .build();
     }
 
     public PatientResponseDTO toPatientResponse(Patient patient) {
         return PatientResponseDTO.builder()
                 .id(patient.getId())
-                .userId(patient.getUserId())
+                .firstName(patient.getFirstName())
+                .lastName(patient.getLastName())
+                .email(patient.getEmail())
+                .phone(patient.getPhone())
+                .gender(patient.getGender())
+                .profilePictureUrl(patient.getProfilePicture())
                 .weight(patient.getWeight())
                 .height(patient.getHeight())
                 .birthDate(patient.getBirthDate())
                 .notes(patient.getNotes())
+                .userId(patient.getUserId())
                 .build();
     }
 
@@ -41,21 +49,6 @@ public class PatientMapper {
                 .page(patients.getNumber())
                 .totalPages(patients.getTotalPages())
                 .totalElements(patients.getTotalElements())
-                .build();
-    }
-
-    public PatientResponseDTO toPatientResponse(Patient patient, UserResponseDTO user) {
-        return PatientResponseDTO.builder()
-                .id(patient.getId())
-                .firstName(user.firstName())
-                .lastName(user.lastName())
-                .email(user.email())
-                .phone(user.phone())
-                .userId(patient.getUserId())
-                .weight(patient.getWeight())
-                .height(patient.getHeight())
-                .birthDate(patient.getBirthDate())
-                .notes(patient.getNotes())
                 .build();
     }
 }

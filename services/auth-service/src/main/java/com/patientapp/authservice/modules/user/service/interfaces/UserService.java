@@ -13,4 +13,5 @@ public interface UserService {
     User findByIdOrThrow(UUID id);
     User findByEmailOrThrow(String email);
     User findByUsernameOrEmailOrThrow(String username, String email);
+    boolean existsByPhone(String phone);
 }

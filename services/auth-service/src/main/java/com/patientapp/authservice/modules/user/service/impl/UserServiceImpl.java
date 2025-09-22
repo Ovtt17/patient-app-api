@@ -56,4 +56,9 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsernameOrEmail(username, email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
+
+    @Override
+    public boolean existsByPhone(String phone) {
+        return userRepository.existsByPhone(phone.trim());
+    }
 }

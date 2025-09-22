@@ -11,10 +11,11 @@ import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
 import com.patientapp.authservice.modules.auth.service.interfaces.AuthService;
 import com.patientapp.authservice.modules.doctor.client.DoctorClient;
 import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
-import com.patientapp.authservice.modules.notification.TemporaryPasswordRequest;
 import com.patientapp.authservice.modules.notification.NotificationProducer;
+import com.patientapp.authservice.modules.notification.TemporaryPasswordRequest;
 import com.patientapp.authservice.modules.notification.UserCreatedRequest;
 import com.patientapp.authservice.modules.patient.client.PatientClient;
+import com.patientapp.authservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.authservice.modules.role.service.interfaces.RoleService;
 import com.patientapp.authservice.modules.token.entity.Token;
 import com.patientapp.authservice.modules.token.repository.TokenRepository;
@@ -71,20 +72,24 @@ public class AuthServiceImpl implements AuthService {
     @Value("${application.front-end.url}")
     private String frontendUrl;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional
     public String register(RegisterRequest request) {
         verifyPasswordComparison(request.password(), request.confirmPassword());
-        verifyIfUserExists(request.email(), request.username());
+        String username = generateUsernameFromEmail(request.email());
+        checkUserExistence(request.email(), username);
+        checkPhoneExistence(request.phone());
 
         var patientRole = roleService.findByNameOrThrow(PACIENTE.name());
 
         var user = User.builder()
                 .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
                 .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
-                .username(NullSafe.ifNotBlankOrNull(request.username()))
                 .email(NullSafe.ifNotBlankOrNull(request.email()))
+                .username(username)
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
                 .gender(request.gender())
                 .password(passwordEncoder.encode(request.password()))
@@ -96,13 +101,25 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         var userSaved = userService.save(user);
-        patientClient.create(userSaved.getId());
+
+        patientClient.create(
+                PatientRequestDTO.builder()
+                        .firstName(userSaved.getFirstName())
+                        .lastName(userSaved.getLastName())
+                        .email(userSaved.getEmail())
+                        .phone(userSaved.getPhone())
+                        .gender(userSaved.getGender())
+                        .profilePictureUrl(userSaved.getProfilePicture())
+                        .userId(userSaved.getId())
+                        .build()
+        );
         notifyUserCreated(userSaved);
         return "Usuario registrado con éxito.";
     }
 
     /**
      * Generates an activation token, saves it, and sends a notification to the user.
+     *
      * @param userSaved the user that was just created
      */
     private void notifyUserCreated(User userSaved) {
@@ -117,11 +134,15 @@ public class AuthServiceImpl implements AuthService {
         notificationProducer.sendUserCreatedEvent(userCreatedRequest);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional
     public String registerDoctor(DoctorRequestDTO request) {
-        verifyIfUserExists(request.email(), request.email());
+        String username = generateUsernameFromEmail(request.email());
+        checkUserExistence(request.email(), username);
+        checkPhoneExistence(request.phone());
 
         String tempPassword = generateTemporaryPassword();
 
@@ -130,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
         var user = User.builder()
                 .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
                 .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
-                .username(NullSafe.ifNotBlankOrNull(request.username()))
+                .username(username)
                 .email(NullSafe.ifNotBlankOrNull(request.email()))
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
                 .gender(request.gender())
@@ -144,7 +165,18 @@ public class AuthServiceImpl implements AuthService {
 
         var userSaved = userService.save(user);
 
-        doctorClient.create(userSaved.getId());
+        doctorClient.create(
+                DoctorRequestDTO.builder()
+                        .firstName(userSaved.getFirstName())
+                        .lastName(userSaved.getLastName())
+                        .email(userSaved.getEmail())
+                        .phone(userSaved.getPhone())
+                        .gender(userSaved.getGender())
+                        .profilePictureUrl(userSaved.getProfilePicture())
+                        .userId(userSaved.getId())
+                        .build()
+        );
+
         notificationProducer.sendTemporaryPasswordEvent(
                 TemporaryPasswordRequest.builder()
                         .firstName(userSaved.getFirstName())
@@ -156,7 +188,9 @@ public class AuthServiceImpl implements AuthService {
         return "Doctor registrado con éxito. La contraseña temporal ha sido enviada al correo electrónico.";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void changePassword(ChangePasswordRequest request, HttpServletResponse response) {
         String email = SecurityUtil.getAuthenticatedEmail()
@@ -187,7 +221,9 @@ public class AuthServiceImpl implements AuthService {
         cookieUtil.clearAuthCookies(response);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional
     public String activateAccount(String token) {
@@ -205,7 +241,9 @@ public class AuthServiceImpl implements AuthService {
         return "Cuenta activada con éxito.";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public UserResponseDTO login(LoginRequest request, HttpServletResponse response) {
         User user = userService.findByUsernameOrEmailOrThrow(request.getUsername(), request.getUsername());
@@ -228,7 +266,9 @@ public class AuthServiceImpl implements AuthService {
         return userMapper.toUserResponseDTO(user);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -249,14 +289,18 @@ public class AuthServiceImpl implements AuthService {
         return "Token de acceso actualizado.";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String logout(HttpServletResponse response) {
         cookieUtil.clearAuthCookies(response);
         return "Se ha cerrado la sesión correctamente.";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public UserResponseDTO getCurrentUser(String accessToken, String refreshToken, HttpServletResponse response) {
         if (accessToken == null || accessToken.isBlank()) {
@@ -302,6 +346,7 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * Generates a secure temporary password.
+     *
      * @return A temporary password string of 8 characters.
      */
     private String generateTemporaryPassword() {
@@ -312,9 +357,10 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * Verifies that two passwords comply with the matching or non-matching condition.
-     * @param password the main password
+     *
+     * @param password        the main password
      * @param confirmPassword the confirmation password
-     * @param shouldMatch true if passwords must match, false if they must be different
+     * @param shouldMatch     true if passwords must match, false if they must be different
      */
     private void verifyPasswordComparison(
             String password,
@@ -331,7 +377,8 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * Verifies that two passwords match.
-     * @param password the main password
+     *
+     * @param password        the main password
      * @param confirmPassword the confirmation password
      */
     private void verifyPasswordComparison(String password, String confirmPassword) {
@@ -341,15 +388,54 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * Verifies if a user already exists with the given email or username.
-     * @param email the email
+     *
+     * @param email    the email
      * @param username the username
      */
-    private void verifyIfUserExists(String email, String username) {
+    private void checkUserExistence(String email, String username) {
         boolean userExists = userService.existsByEmail(email)
                 || userService.existsByUsername(username);
 
         if (userExists) {
             throw new IllegalArgumentException("El usuario ya existe con el correo electrónico o nombre de usuario proporcionado.");
+        }
+    }
+
+    /**
+     * Generates a username based on the email if the username is not provided.
+     * Ensures uniqueness by appending numbers if necessary.
+     *
+     * @param email the user's email
+     * @return a unique username
+     */
+    private String generateUsernameFromEmail(String email) {
+        // Extraer parte antes de @
+        String base = email.substring(0, email.indexOf('@')).toLowerCase().replaceAll("[^a-z0-9]", "");
+        String username = base;
+        int suffix = 1;
+
+        // Evitar colisiones exactas
+        while (userService.existsByUsername(username)) {
+            username = base + suffix;
+            suffix++;
+            if (suffix > 100) { // fallback aleatorio
+                username = base + UUID.randomUUID().toString().substring(0, 5);
+                break;
+            }
+        }
+
+        return username;
+    }
+
+    /**
+     * Checks if a phone number is already in use by another user.
+     *
+     * @param phone the phone number to check
+     * @throws IllegalArgumentException if the phone number is already in use
+     */
+    private void checkPhoneExistence(String phone) {
+        if (userService.existsByPhone(phone)) {
+            throw new IllegalArgumentException("El número de teléfono ya está en uso. Intente con otro.");
         }
     }
 

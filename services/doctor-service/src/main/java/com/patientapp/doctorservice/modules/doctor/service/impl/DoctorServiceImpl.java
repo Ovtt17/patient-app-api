@@ -2,8 +2,7 @@ package com.patientapp.doctorservice.modules.doctor.service.impl;
 
 import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
-import com.patientapp.doctorservice.modules.auth.client.AuthClient;
-import com.patientapp.doctorservice.modules.auth.dto.UserResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorMedicalInfoDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
@@ -31,21 +30,17 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorRepository doctorRepository;
     private final DoctorMapper doctorMapper;
     private final SpecialtyService specialtyService;
-    private final AuthClient authClient;
 
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
-    public UUID create(UUID userId) {
+    public UUID create(DoctorRequestDTO request) {
         // TODO: Use actual zone from doctor's profile or request
         ZoneId zone = ZoneId.of("America/Managua");
-        Doctor doctor = Doctor.builder()
-                .userId(userId)
-                .zoneId(zone.getId())
-                .active(true)
-                .build();
+        Doctor doctor = doctorMapper.toEntity(request);
+        doctor.setZoneId(zone.getId());
         return doctorRepository.save(doctor).getId();
     }
 
@@ -70,10 +65,7 @@ public class DoctorServiceImpl implements DoctorService {
         }
 
         List<DoctorResponseDTO> doctorDTOs = doctors.stream()
-                .map(doctor -> {
-                    UserResponseDTO user = authClient.getUserById(doctor.getUserId());
-                    return doctorMapper.toDoctorResponse(doctor, user);
-                })
+                .map(doctorMapper::toDoctorResponse)
                 .toList();
 
         return DoctorPagedResponseDTO.builder()
@@ -90,7 +82,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorResponseDTO getById(UUID id) {
         Doctor doctor = getEntityByIdOrThrow(id);
-        return getByUserId(doctor.getUserId());
+        return doctorMapper.toDoctorResponse(doctor);
     }
 
     /**
@@ -98,7 +90,7 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     public Doctor getEntityByIdOrThrow(UUID id) {
-        return doctorRepository.findById(id)
+        return doctorRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado"));
     }
 
@@ -107,7 +99,7 @@ public class DoctorServiceImpl implements DoctorService {
      */
     @Override
     @Transactional
-    public DoctorResponseDTO update(UUID id, DoctorRequestDTO request) {
+    public DoctorResponseDTO updateMedicalInfo(UUID id, DoctorMedicalInfoDTO request) {
         Doctor doctor = getEntityByIdOrThrow(id);
         doctor.setMedicalLicense(request.medicalLicense().trim());
         doctor.setOfficeNumber(request.officeNumber().trim());
@@ -132,11 +124,10 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public DoctorResponseDTO getByUserId(UUID userId) {
-        Doctor doctor = doctorRepository.findByUserId(userId)
+        Doctor doctor = doctorRepository.findByUserIdAndActiveTrue(userId)
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado para el usuario dado."));
 
-        UserResponseDTO user = authClient.getUserById(userId);
-        return doctorMapper.toDoctorResponse(doctor, user);
+        return doctorMapper.toDoctorResponse(doctor);
     }
 
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {

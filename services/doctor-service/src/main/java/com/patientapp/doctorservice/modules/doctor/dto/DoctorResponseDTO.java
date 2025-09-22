@@ -1,5 +1,6 @@
 package com.patientapp.doctorservice.modules.doctor.dto;
 
+import com.patientapp.doctorservice.modules.doctor.enums.Gender;
 import lombok.Builder;
 
 import java.util.List;
@@ -12,6 +13,8 @@ public record DoctorResponseDTO(
         String lastName,
         String email,
         String phone,
+        Gender gender,
+        String profilePictureUrl,
         String medicalLicense,
         String officeNumber,
         String userId,

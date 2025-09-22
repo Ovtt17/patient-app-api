@@ -3,6 +3,7 @@ package com.patientapp.patientservice.modules.patient.controller;
 import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
+import com.patientapp.patientservice.modules.patient.dto.PatientMedicalInfoDTO;
 import com.patientapp.patientservice.modules.patient.service.interfaces.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,8 +27,8 @@ public class PatientController {
 
     @Operation(summary = "Crear un nuevo paciente")
     @PostMapping
-    public ResponseEntity<UUID> create(@RequestBody UUID userId) {
-        var patientId = patientService.create(userId);
+    public ResponseEntity<UUID> create(@RequestBody PatientRequestDTO request) {
+        var patientId = patientService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(patientId);
     }
 
@@ -50,7 +51,8 @@ public class PatientController {
     @Operation(summary = "Obtener un paciente por ID")
     @GetMapping("/{id}")
     public ResponseEntity<PatientResponseDTO> getById(
-            @Parameter(description = "UUID del paciente") @PathVariable UUID id
+            @Parameter(description = "UUID del paciente")
+            @PathVariable UUID id
     ) {
         return ResponseEntity.ok(patientService.getById(id));
     }
@@ -63,13 +65,14 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getByUserId(userId));
     }
 
-    @Operation(summary = "Actualizar información de un paciente")
-    @PutMapping("/{id}")
-    public ResponseEntity<PatientResponseDTO> update(
+    @Operation(summary = "Actualizar información médica del paciente")
+    @PatchMapping("/{id}/medical-info")
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
+    public ResponseEntity<PatientResponseDTO> updateMedicalInfo(
             @Parameter(description = "UUID del paciente") @PathVariable UUID id,
-            @Valid @RequestBody PatientRequestDTO request
+            @Valid @RequestBody PatientMedicalInfoDTO request
     ) {
-        return ResponseEntity.ok(patientService.update(id, request));
+        return ResponseEntity.ok(patientService.updateMedicalInfo(id, request));
     }
 
     @Operation(summary = "Desactivar un paciente")

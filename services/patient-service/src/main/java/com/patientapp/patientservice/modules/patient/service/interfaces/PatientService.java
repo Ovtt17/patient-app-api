@@ -3,6 +3,7 @@ package com.patientapp.patientservice.modules.patient.service.interfaces;
 import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
+import com.patientapp.patientservice.modules.patient.dto.PatientMedicalInfoDTO;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
 
 import java.util.UUID;
@@ -14,10 +15,10 @@ import java.util.UUID;
 public interface PatientService {
     /**
      * Creates a new patient.
-     * @param userId UUID of the user associated with the patient.
+     * @param request DTO containing patient data.
      * @return UUID of the created patient.
      */
-    UUID create(UUID userId);
+    UUID create(PatientRequestDTO request);
 
     /**
      * Retrieves a paginated and sorted list of all active patients.
@@ -54,7 +55,7 @@ public interface PatientService {
      * @param request DTO containing updated patient data.
      * @return Updated PatientResponseDTO.
      */
-    PatientResponseDTO update(UUID id, PatientRequestDTO request);
+    PatientResponseDTO updateMedicalInfo(UUID id, PatientMedicalInfoDTO request);
 
     /**
      * Deactivates a patient by their ID.

@@ -1,8 +1,8 @@
 package com.patientapp.patientservice.modules.patient.service.impl;
 
 import com.patientapp.patientservice.common.handler.exceptions.PatientNotFoundException;
-import com.patientapp.patientservice.modules.auth.client.AuthClient;
-import com.patientapp.patientservice.modules.auth.dto.UserResponseDTO;
+import com.patientapp.patientservice.common.utils.NullSafe;
+import com.patientapp.patientservice.modules.patient.dto.PatientMedicalInfoDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
@@ -27,16 +27,14 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository repository;
     private final PatientMapper mapper;
-    private final AuthClient authClient;
 
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
-    public UUID create(UUID userId) {
-        Patient patient = new Patient();
-        patient.setUserId(userId);
+    public UUID create(PatientRequestDTO request) {
+        Patient patient = mapper.toEntity(request);
         patient.setActive(true);
         return repository.save(patient).getId();
     }
@@ -62,10 +60,7 @@ public class PatientServiceImpl implements PatientService {
         }
 
         List<PatientResponseDTO> patientDTOs = patients.stream()
-                .map(patient -> {
-                    UserResponseDTO user = authClient.getUserById(patient.getUserId());
-                    return mapper.toPatientResponse(patient, user);
-                })
+                .map(mapper::toPatientResponse)
                 .toList();
 
         return PatientPagedResponseDTO.builder()
@@ -82,7 +77,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientResponseDTO getById(UUID id) {
         Patient patient = getEntityByIdOrThrow(id);
-        return getByUserId(patient.getUserId());
+        return mapper.toPatientResponse(patient);
     }
 
     /**
@@ -99,12 +94,12 @@ public class PatientServiceImpl implements PatientService {
      */
     @Override
     @Transactional
-    public PatientResponseDTO update(UUID id, PatientRequestDTO request) {
+    public PatientResponseDTO updateMedicalInfo(UUID id, PatientMedicalInfoDTO request) {
         Patient patient = getEntityByIdOrThrow(id);
         patient.setWeight(request.weight());
         patient.setHeight(request.height());
         patient.setBirthDate(request.birthDate());
-        patient.setNotes(request.notes().trim());
+        patient.setNotes(NullSafe.ifNotBlankOrNull(request.notes()));
 
         Patient patientUpdated = repository.save(patient);
         return mapper.toPatientResponse(patientUpdated);
@@ -130,7 +125,6 @@ public class PatientServiceImpl implements PatientService {
         Patient patient = repository.findByUserId(userId)
                 .orElseThrow(() -> new PatientNotFoundException("Paciente no encontrado para el usuario dado."));
 
-        UserResponseDTO user = authClient.getUserById(userId);
-        return mapper.toPatientResponse(patient, user);
+        return mapper.toPatientResponse(patient);
     }
 }

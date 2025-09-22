@@ -1,5 +1,6 @@
 package com.patientapp.doctorservice.modules.doctor.controller;
 
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorMedicalInfoDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
@@ -29,8 +30,8 @@ public class DoctorController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
-    public ResponseEntity<UUID> create(@RequestBody UUID userId) {
-        var doctorId = doctorService.create(userId);
+    public ResponseEntity<UUID> create(@RequestBody DoctorRequestDTO request) {
+        var doctorId = doctorService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorId);
     }
 
@@ -53,7 +54,8 @@ public class DoctorController {
     @Operation(summary = "Obtener un doctor por ID")
     @GetMapping("/{id}")
     public ResponseEntity<DoctorResponseDTO> getById(
-            @Parameter(description = "UUID del doctor") @PathVariable UUID id
+            @Parameter(description = "UUID del doctor")
+            @PathVariable UUID id
     ) {
         return ResponseEntity.ok(doctorService.getById(id));
     }
@@ -66,15 +68,16 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.getByUserId(userId));
     }
 
-    @Operation(summary = "Actualizar información de un doctor")
-    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar información médica del doctor")
+    @PutMapping("/{id}/medical-info")
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @Transactional
-    public ResponseEntity<DoctorResponseDTO> update(
-            @Parameter(description = "UUID del doctor") @PathVariable UUID id,
-            @Valid @RequestBody DoctorRequestDTO request
+    public ResponseEntity<DoctorResponseDTO> updateMedicalInfo(
+            @Parameter(description = "UUID del doctor")
+            @PathVariable UUID id,
+            @Valid @RequestBody DoctorMedicalInfoDTO request
     ) {
-        return ResponseEntity.ok(doctorService.update(id, request));
+        return ResponseEntity.ok(doctorService.updateMedicalInfo(id, request));
     }
 
     @Operation(summary = "Desactivar un doctor")

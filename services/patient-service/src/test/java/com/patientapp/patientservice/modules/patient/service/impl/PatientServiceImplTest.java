@@ -5,6 +5,7 @@ import com.patientapp.patientservice.modules.patient.dto.PatientPagedResponseDTO
 import com.patientapp.patientservice.modules.patient.dto.PatientRequestDTO;
 import com.patientapp.patientservice.modules.patient.dto.PatientResponseDTO;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
+import com.patientapp.patientservice.modules.patient.enums.Gender;
 import com.patientapp.patientservice.modules.patient.mapper.PatientMapper;
 import com.patientapp.patientservice.modules.patient.repository.PatientRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,29 +53,56 @@ class PatientServiceImplTest {
                 .id(patientId)
                 .userId(userId)
                 .active(true)
-                .weight(80.0)
-                .height(180.0)
-                .birthDate(LocalDate.of(1995, 1, 1))
-                .notes("Notes")
+                .firstName("John")
+                .lastName("Doe")
+                .email("john.doe@email.com")
+                .phone("12345678")
+                .gender(Gender.HOMBRE)
                 .build();
     }
 
     // create
     @Test
-    @DisplayName("create: should persist active patient with userId and return generated id")
+    @DisplayName("create: should persist patient with all fields from PatientRequestDTO and return generated id")
     void create_success() {
         ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
+        PatientRequestDTO request = new PatientRequestDTO(
+                "John",
+                "Doe",
+                "john.doe@email.com",
+                "12345678",
+                Gender.HOMBRE,
+                null,
+                userId
+        );
+        when(mapper.toEntity(request)).thenAnswer(inv -> {
+            PatientRequestDTO req = inv.getArgument(0);
+            return Patient.builder()
+                    .userId(req.userId())
+                    .firstName(req.firstName())
+                    .lastName(req.lastName())
+                    .email(req.email())
+                    .phone(req.phone())
+                    .gender(req.gender())
+                    .active(true)
+                    .build();
+        });
         when(repository.save(any(Patient.class))).thenAnswer(inv -> {
             Patient p = inv.getArgument(0);
             p.setId(patientId);
             return p;
         });
 
-        UUID result = service.create(userId);
+        UUID result = service.create(request);
 
         verify(repository).save(captor.capture());
         Patient saved = captor.getValue();
         assertEquals(userId, saved.getUserId());
+        assertEquals("John", saved.getFirstName());
+        assertEquals("Doe", saved.getLastName());
+        assertEquals("john.doe@email.com", saved.getEmail());
+        assertEquals("12345678", saved.getPhone());
+        assertEquals(Gender.HOMBRE, saved.getGender());
         assertTrue(saved.isActive());
         assertEquals(patientId, result);
     }
@@ -102,10 +129,11 @@ class PatientServiceImplTest {
         PatientResponseDTO responseDTO = PatientResponseDTO.builder()
                 .id(p.getId())
                 .userId(p.getUserId())
-                .weight(p.getWeight())
-                .height(p.getHeight())
-                .birthDate(p.getBirthDate())
-                .notes(p.getNotes())
+                .firstName(p.getFirstName())
+                .lastName(p.getLastName())
+                .email(p.getEmail())
+                .phone(p.getPhone())
+                .gender(p.getGender())
                 .build();
         PatientPagedResponseDTO pagedDTO = PatientPagedResponseDTO.builder()
                 .patients(List.of(responseDTO))
@@ -192,56 +220,6 @@ class PatientServiceImplTest {
         assertThrows(PatientNotFoundException.class, () -> service.getEntityByIdOrThrow(patientId));
     }
 
-    // update
-    @Test
-    @DisplayName("update: updates mutable fields, trims notes, saves and maps response")
-    void update_success() {
-        Patient existing = buildPatient();
-        when(repository.findByIdAndActiveTrue(patientId)).thenReturn(Optional.of(existing));
-
-        PatientRequestDTO request = new PatientRequestDTO(
-                existing.getUserId(),
-                90.0,
-                185.5,
-                LocalDate.of(2000, 2, 2),
-                "  New Notes  "
-        );
-
-        // repository.save returns same instance mutated
-        when(repository.save(any(Patient.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        PatientResponseDTO mapped = PatientResponseDTO.builder()
-                .id(existing.getId())
-                .userId(existing.getUserId())
-                .weight(90.0)
-                .height(185.5)
-                .birthDate(LocalDate.of(2000, 2, 2))
-                .notes("New Notes")
-                .build();
-        when(mapper.toPatientResponse(existing)).thenReturn(mapped);
-
-        PatientResponseDTO result = service.update(patientId, request);
-
-        assertEquals(90.0, existing.getWeight());
-        assertEquals(185.5, existing.getHeight());
-        assertEquals(LocalDate.of(2000, 2, 2), existing.getBirthDate());
-        assertEquals("New Notes", existing.getNotes());
-        assertEquals(mapped, result);
-        verify(repository).save(existing);
-    }
-
-    // update null notes -> NPE due to trim()
-    @Test
-    @DisplayName("update: null notes triggers NullPointerException (current implementation)")
-    void update_nullNotes_throwsNpe() {
-        Patient existing = buildPatient();
-        when(repository.findByIdAndActiveTrue(patientId)).thenReturn(Optional.of(existing));
-
-        PatientRequestDTO request = new PatientRequestDTO(existing.getUserId(), 70.0, 175.0, LocalDate.now().minusYears(20), null);
-        assertThrows(NullPointerException.class, () -> service.update(patientId, request));
-        verify(repository, never()).save(any());
-    }
-
     // deactivate
     @Test
     @DisplayName("deactivate: sets active false and saves")
@@ -255,4 +233,3 @@ class PatientServiceImplTest {
         verify(repository).save(existing);
     }
 }
-
