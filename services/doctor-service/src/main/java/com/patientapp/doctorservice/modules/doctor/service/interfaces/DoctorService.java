@@ -2,10 +2,7 @@ package com.patientapp.doctorservice.modules.doctor.service.interfaces;
 
 import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorMedicalInfoDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.*;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 
 import java.util.UUID;
@@ -54,15 +51,24 @@ public interface DoctorService {
     Doctor getEntityByIdOrThrow(UUID id);
 
     /**
+     * Updates the basic information of an existing doctor.
+     *
+     * @param userId  UUID of the user associated with the doctor
+     * @param request DoctorBasicInfoDTO containing the updated basic information
+     * @throws DoctorNotFoundException if the doctor does not exist
+     */
+    void updateBasicInfo(UUID userId, DoctorBasicInfoDTO request);
+
+    /**
      * Updates the information and specialties of an existing doctor.
      *
-     * @param id  UUID of the doctor to update
+     * @param userId UUID of the user associated with the doctor
      * @param request DoctorMedicalInfoDTO containing the updated information and specialtyIds
      * @return The updated DoctorResponseDTO
      * @throws DoctorNotFoundException if the doctor does not exist
      * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    DoctorResponseDTO updateMedicalInfo(UUID id, DoctorMedicalInfoDTO request);
+    DoctorResponseDTO updateMedicalInfo(UUID userId, DoctorMedicalInfoDTO request);
 
     /**
      * Deactivates a doctor instead of deleting them from the database.
@@ -80,4 +86,13 @@ public interface DoctorService {
      * @throws DoctorNotFoundException if no doctor is associated with the given userId
      */
     DoctorResponseDTO getByUserId(UUID userId);
+
+    /**
+     * Retrieves a Doctor entity by its associated user ID or throws an exception if not found.
+     *
+     * @param userId UUID of the user associated with the doctor
+     * @return Doctor entity associated with the given userId
+     * @throws DoctorNotFoundException if no doctor is associated with the given userId
+     */
+    Doctor getEntityByUserIdOrThrow(UUID userId);
 }
