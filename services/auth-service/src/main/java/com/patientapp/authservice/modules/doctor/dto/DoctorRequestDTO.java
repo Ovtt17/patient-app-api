@@ -38,6 +38,8 @@ public record DoctorRequestDTO(
         @NotNull(message = "El género es obligatorio")
         Gender gender,
 
+        String profilePictureUrl,
+
         UUID userId
 ) {
 }

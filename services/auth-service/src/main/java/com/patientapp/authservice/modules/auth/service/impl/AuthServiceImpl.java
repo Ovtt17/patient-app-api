@@ -165,7 +165,18 @@ public class AuthServiceImpl implements AuthService {
 
         var userSaved = userService.save(user);
 
-        doctorClient.create(userSaved.getId());
+        doctorClient.create(
+                DoctorRequestDTO.builder()
+                        .firstName(userSaved.getFirstName())
+                        .lastName(userSaved.getLastName())
+                        .email(userSaved.getEmail())
+                        .phone(userSaved.getPhone())
+                        .gender(userSaved.getGender())
+                        .profilePictureUrl(userSaved.getProfilePicture())
+                        .userId(userSaved.getId())
+                        .build()
+        );
+
         notificationProducer.sendTemporaryPasswordEvent(
                 TemporaryPasswordRequest.builder()
                         .firstName(userSaved.getFirstName())

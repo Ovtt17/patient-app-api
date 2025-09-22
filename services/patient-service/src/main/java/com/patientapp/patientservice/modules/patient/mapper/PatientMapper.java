@@ -19,6 +19,7 @@ public class PatientMapper {
                 .phone(request.phone())
                 .gender(request.gender())
                 .profilePicture(request.profilePictureUrl())
+                .active(true)
                 .build();
     }
 

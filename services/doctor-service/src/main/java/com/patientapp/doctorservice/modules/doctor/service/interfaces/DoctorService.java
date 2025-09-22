@@ -2,6 +2,7 @@ package com.patientapp.doctorservice.modules.doctor.service.interfaces;
 
 import com.patientapp.doctorservice.common.handler.exceptions.DoctorNotFoundException;
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorMedicalInfoDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorPagedResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
@@ -14,10 +15,10 @@ public interface DoctorService {
     /**
      * Creates a new doctor associated with the given userId.
      *
-     * @param userId UUID of the user associated with the doctor
+     * @param request DoctorRequestDTO containing the doctor's information and specialtyIds
      * @return ID of the created Doctor
      */
-    UUID create(UUID userId);
+    UUID create(DoctorRequestDTO request);
 
     /**
      * Retrieves a paginated and sorted list of all active doctors.
@@ -56,12 +57,12 @@ public interface DoctorService {
      * Updates the information and specialties of an existing doctor.
      *
      * @param id  UUID of the doctor to update
-     * @param request DoctorRequestDTO containing the updated information and specialtyIds
+     * @param request DoctorMedicalInfoDTO containing the updated information and specialtyIds
      * @return The updated DoctorResponseDTO
      * @throws DoctorNotFoundException if the doctor does not exist
      * @throws SpecialtyNotFoundException if any specialtyId is invalid
      */
-    DoctorResponseDTO update(UUID id, DoctorRequestDTO request);
+    DoctorResponseDTO updateMedicalInfo(UUID id, DoctorMedicalInfoDTO request);
 
     /**
      * Deactivates a doctor instead of deleting them from the database.
