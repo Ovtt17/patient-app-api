@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,7 +25,6 @@ public class DoctorController {
     @Operation(summary = "Crear un nuevo doctor")
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Transactional
     public ResponseEntity<UUID> create(@RequestBody DoctorRequestDTO request) {
         var doctorId = doctorService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorId);
@@ -78,7 +76,6 @@ public class DoctorController {
     @Operation(summary = "Actualizar información médica del doctor")
     @PutMapping("/{userId}/medical-info")
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
-    @Transactional
     public ResponseEntity<DoctorResponseDTO> updateMedicalInfo(
             @Parameter(description = "UUID del usuario")
             @PathVariable UUID userId,
@@ -90,7 +87,6 @@ public class DoctorController {
     @Operation(summary = "Desactivar un doctor")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Transactional
     public ResponseEntity<?> deactivate(
             @Parameter(description = "UUID del doctor") @PathVariable UUID id
     ) {
