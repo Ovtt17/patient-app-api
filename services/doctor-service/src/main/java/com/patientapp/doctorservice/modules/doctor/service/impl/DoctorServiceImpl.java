@@ -34,7 +34,6 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public UUID create(DoctorRequestDTO request) {
-        // TODO: Use actual zone from doctor's profile or request
         ZoneId zone = ZoneId.of("America/Managua");
         Doctor doctor = doctorMapper.toEntity(request);
         doctor.setZoneId(zone.getId());
@@ -66,7 +65,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .toList();
 
         return DoctorPagedResponseDTO.builder()
-                .doctors(doctorDTOs)
+                .content(doctorDTOs)
                 .page(doctors.getNumber())
                 .totalPages(doctors.getTotalPages())
                 .totalElements(doctors.getTotalElements())
