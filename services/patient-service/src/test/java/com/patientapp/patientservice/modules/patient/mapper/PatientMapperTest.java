@@ -102,7 +102,7 @@ class PatientMapperTest {
         PatientPagedResponseDTO dto = mapper.toPatientPagedResponseDTO(page);
 
         assertNotNull(dto);
-        assertEquals(2, dto.patients().size());
+        assertEquals(2, dto.content().size());
         assertEquals(1, dto.page());
         assertEquals(3, dto.totalPages());
         assertEquals(5, dto.totalElements());
@@ -110,7 +110,7 @@ class PatientMapperTest {
         // Verify individual patient mapping
         for (int i = 0; i < patients.size(); i++) {
             Patient source = patients.get(i);
-            PatientResponseDTO target = dto.patients().get(i);
+            PatientResponseDTO target = dto.content().get(i);
             assertEquals(source.getId(), target.id());
             assertEquals(source.getUserId(), target.userId());
             assertEquals(source.getFirstName(), target.firstName());
@@ -129,8 +129,8 @@ class PatientMapperTest {
         PatientPagedResponseDTO dto = mapper.toPatientPagedResponseDTO(emptyPage);
 
         assertNotNull(dto);
-        assertNotNull(dto.patients());
-        assertTrue(dto.patients().isEmpty());
+        assertNotNull(dto.content());
+        assertTrue(dto.content().isEmpty());
         assertEquals(0, dto.page());
         assertEquals(0, dto.totalPages());
         assertEquals(0, dto.totalElements());

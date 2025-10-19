@@ -147,7 +147,7 @@ class PatientServiceImplTest {
         PatientPagedResponseDTO result = service.getAllActive(0, 5, "userId", "ASC");
 
         assertNotNull(result);
-        assertEquals(1, result.patients().size());
+        assertEquals(1, result.content().size());
         assertEquals(0, result.page());
         assertEquals(1, result.totalPages());
         verify(mapper).toPatientPagedResponseDTO(page);
