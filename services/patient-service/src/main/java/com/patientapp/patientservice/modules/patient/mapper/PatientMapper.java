@@ -42,7 +42,7 @@ public class PatientMapper {
 
     public PatientPagedResponseDTO toPatientPagedResponseDTO(Page<Patient> patients) {
         return PatientPagedResponseDTO.builder()
-                .patients(patients
+                .content(patients
                         .map(this::toPatientResponse)
                         .getContent()
                 )

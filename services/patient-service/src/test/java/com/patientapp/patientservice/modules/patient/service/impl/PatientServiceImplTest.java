@@ -136,7 +136,7 @@ class PatientServiceImplTest {
                 .gender(p.getGender())
                 .build();
         PatientPagedResponseDTO pagedDTO = PatientPagedResponseDTO.builder()
-                .patients(List.of(responseDTO))
+                .content(List.of(responseDTO))
                 .page(0)
                 .totalPages(1)
                 .totalElements(1)
@@ -169,7 +169,7 @@ class PatientServiceImplTest {
         when(repository.findAllByActiveTrue(any(Pageable.class))).thenReturn(page);
 
         PatientPagedResponseDTO pagedDTO = PatientPagedResponseDTO.builder()
-                .patients(List.of())
+                .content(List.of())
                 .page(1)
                 .totalPages(2)
                 .totalElements(4)

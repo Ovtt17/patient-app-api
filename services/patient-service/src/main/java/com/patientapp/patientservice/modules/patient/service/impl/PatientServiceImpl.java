@@ -61,7 +61,7 @@ public class PatientServiceImpl implements PatientService {
                 .toList();
 
         return PatientPagedResponseDTO.builder()
-                .patients(patientDTOs)
+                .content(patientDTOs)
                 .page(patients.getNumber())
                 .totalPages(patients.getTotalPages())
                 .totalElements(patients.getTotalElements())
