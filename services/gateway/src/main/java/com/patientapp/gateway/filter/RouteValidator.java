@@ -11,7 +11,6 @@ public class RouteValidator {
 
     // Public endpoints that do NOT require authentication
     private static final List<String> openApiEndpoints = List.of(
-            "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/activate-account",
             "/api/v1/auth/refresh",
@@ -28,14 +27,20 @@ public class RouteValidator {
     );
 
     // Predicate: if the route is NOT in the list of public endpoints → requires authentication
-    public Predicate<ServerHttpRequest> isSecured =
-            request -> openApiEndpoints
-                    .stream()
-                    .noneMatch(uri -> request.getURI().getPath().equals(uri) || request.getURI().getPath().startsWith(uri + "/"));
+    public Predicate<ServerHttpRequest> isSecured = request ->
+            openApiEndpoints.stream().noneMatch(uri -> pathMatches(request.getURI().getPath(), uri));
 
     // Optional helper method to check if the route is public
     public boolean isPublic(ServerHttpRequest request) {
-        return openApiEndpoints.stream()
-                .anyMatch(uri -> request.getURI().getPath().equals(uri) || request.getURI().getPath().startsWith(uri + "/"));
+        return openApiEndpoints.stream().anyMatch(uri -> pathMatches(request.getURI().getPath(), uri));
+    }
+
+    private boolean pathMatches(String path, String pattern) {
+        // Quita parámetros y normaliza
+        String cleanPath = path.split("\\?")[0];
+
+        return cleanPath.equals(pattern)
+                || cleanPath.startsWith(pattern)
+                || cleanPath.matches(pattern.replace("**", ".*"));
     }
 }
