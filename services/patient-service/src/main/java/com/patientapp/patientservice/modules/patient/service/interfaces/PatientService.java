@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /**
  * Service interface for managing Patient entities.
- * Provides methods for creating, retrieving, updating, and deactivating patients.
+ * Provides methods for creating, retrieving, updating, and deactivating content.
  */
 public interface PatientService {
     /**
@@ -18,12 +18,12 @@ public interface PatientService {
     UUID create(PatientRequestDTO request);
 
     /**
-     * Retrieves a paginated and sorted list of all active patients.
+     * Retrieves a paginated and sorted list of all active content.
      * @param page      zero-based page index to retrieve
      * @param size      number of records per page
      * @param sortBy    field name to sort by
      * @param sortOrder sort direction ("asc" or "desc")
-     * @return {@link PatientPagedResponseDTO} containing the requested page of active patients
+     * @return {@link PatientPagedResponseDTO} containing the requested page of active content
      */
     PatientPagedResponseDTO getAllActive(
             int page,

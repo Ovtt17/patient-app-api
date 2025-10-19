@@ -136,7 +136,7 @@ class PatientServiceImplTest {
                 .gender(p.getGender())
                 .build();
         PatientPagedResponseDTO pagedDTO = PatientPagedResponseDTO.builder()
-                .patients(List.of(responseDTO))
+                .content(List.of(responseDTO))
                 .page(0)
                 .totalPages(1)
                 .totalElements(1)
@@ -147,7 +147,7 @@ class PatientServiceImplTest {
         PatientPagedResponseDTO result = service.getAllActive(0, 5, "userId", "ASC");
 
         assertNotNull(result);
-        assertEquals(1, result.patients().size());
+        assertEquals(1, result.content().size());
         assertEquals(0, result.page());
         assertEquals(1, result.totalPages());
         verify(mapper).toPatientPagedResponseDTO(page);
@@ -169,7 +169,7 @@ class PatientServiceImplTest {
         when(repository.findAllByActiveTrue(any(Pageable.class))).thenReturn(page);
 
         PatientPagedResponseDTO pagedDTO = PatientPagedResponseDTO.builder()
-                .patients(List.of())
+                .content(List.of())
                 .page(1)
                 .totalPages(2)
                 .totalElements(4)

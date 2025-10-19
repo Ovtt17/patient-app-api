@@ -6,7 +6,7 @@ import java.util.List;
 
 @Builder
 public record PatientPagedResponseDTO(
-        List<PatientResponseDTO> patients,
+        List<PatientResponseDTO> content,
         int page,
         int totalPages,
         long totalElements

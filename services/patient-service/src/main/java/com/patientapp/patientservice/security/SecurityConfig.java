@@ -38,7 +38,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        // Permitir crear paciente sin autenticación (solo POST /patients)
+                        // Permitir crear paciente sin autenticación (solo POST /content)
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/patients"
