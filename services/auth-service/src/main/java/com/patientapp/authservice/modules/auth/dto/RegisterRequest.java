@@ -1,23 +1,32 @@
 package com.patientapp.authservice.modules.auth.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.patientapp.authservice.modules.role.enums.Roles;
+import com.patientapp.authservice.modules.user.enums.Gender;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
+
+import java.util.UUID;
 
 @Builder
 public record RegisterRequest(
-        @NotBlank(message = "El nombre es obligatorio")
-        @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
+        @NotBlank(message = "El nombre es obligatorio.")
+        @Size(
+                min = 2,
+                max = 100,
+                message = "El nombre debe tener entre 2 y 100 caracteres."
+        )
         String firstName,
 
-        @NotBlank(message = "El apellido es obligatorio")
-        @Size(min = 3, max = 100, message = "El apellido debe tener entre 3 y 100 caracteres")
+        @NotBlank(message = "El apellido es obligatorio.")
+        @Size(
+                min = 2,
+                max = 100,
+                message = "El apellido debe tener entre 2 y 100 caracteres."
+        )
         String lastName,
 
-        @Email(message = "El email no es válido")
-        @NotBlank(message = "El email es obligatorio")
+        @NotBlank(message = "El email es obligatorio.")
+        @Email(message = "Debe ingresar un email válido.")
         String email,
 
         @NotBlank(message = "El número de teléfono es obligatorio")
@@ -27,13 +36,15 @@ public record RegisterRequest(
         )
         String phone,
 
-        @NotBlank(message = "La contraseña es obligatoria")
-        @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
-        String password,
+        @NotNull(message = "El género es obligatorio")
+        Gender gender,
 
-        @NotBlank(message = "La confirmación de la contraseña es obligatoria")
-        @Size(min = 8, message = "La confirmación de la contraseña debe tener al menos 8 caracteres")
-        String confirmPassword
+        @NotNull(message = "El rol es obligatorio")
+        Roles role,
+
+        String profilePictureUrl,
+
+        UUID userId
 ) {
 }
 

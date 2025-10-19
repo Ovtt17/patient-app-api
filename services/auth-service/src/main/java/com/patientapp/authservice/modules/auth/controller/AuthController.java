@@ -1,11 +1,10 @@
 package com.patientapp.authservice.modules.auth.controller;
 
-import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
 import com.patientapp.authservice.modules.auth.dto.LoginRequest;
 import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
-import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.auth.service.interfaces.AuthService;
+import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,27 +27,14 @@ public class AuthController {
      * @param request The registration request containing user details.
      * @return A message indicating successful registration.
      */
-    @Operation(summary = "Registrar nuevo usuario", description = "Registra un nuevo usuario con los detalles proporcionados.")
+    @Operation(summary = "Registrar nuevo usuario", description = "Registra un nuevo usuario (paciente o doctor) con contraseña temporal y obligación de cambio en el primer inicio de sesión.")
     @PostMapping("/register")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> register(
             @RequestBody @Valid final RegisterRequest request
     ) {
         final String message = authService.register(request);
         return ResponseEntity.accepted().body(message);
-    }
-
-    /**
-     * Registers a new doctor in the system and generates a user with DOCTOR role and a temporary password.
-     * @param request The doctor registration request containing doctor details.
-     * @return The created doctor's details including temporary password.
-     */
-    @Operation(summary = "Registrar nuevo doctor", description = "Registra un nuevo doctor en el sistema. Se genera un usuario con rol DOCTOR y una contraseña temporal.")
-    @PostMapping("/register-doctor")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> registerDoctor(
-            @RequestBody @Valid final DoctorRequestDTO request
-    ) {
-        return ResponseEntity.ok(authService.registerDoctor(request));
     }
 
     @PostMapping("/change-password")

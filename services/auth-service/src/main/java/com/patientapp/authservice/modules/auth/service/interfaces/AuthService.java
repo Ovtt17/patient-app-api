@@ -6,7 +6,6 @@ import com.patientapp.authservice.common.handler.exceptions.UnauthorizedExceptio
 import com.patientapp.authservice.modules.auth.dto.ChangePasswordRequest;
 import com.patientapp.authservice.modules.auth.dto.LoginRequest;
 import com.patientapp.authservice.modules.auth.dto.RegisterRequest;
-import com.patientapp.authservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -27,17 +26,6 @@ public interface AuthService {
      * @throws IllegalArgumentException if passwords do not match or the user already exists
      */
     String register(RegisterRequest request);
-
-    /**
-     * Registers a new doctor account and creates the corresponding doctor profile
-     * in the doctor service.
-     *
-     * @param request the doctor registration data
-     * @return a DTO containing the created doctor's email and a temporary password
-     * @throws IllegalArgumentException if a user already exists with the given email or username
-     */
-    String registerDoctor(DoctorRequestDTO request);
-
 
     /**
      * Changes the password for the currently authenticated user.
