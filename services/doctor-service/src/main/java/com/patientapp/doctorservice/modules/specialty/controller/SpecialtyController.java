@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/specialties")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_DOCTOR')")
+@PreAuthorize("hasAuthority('doctor:read')")
 @Tag(name = "Especialidades", description = "Gestión de especialidades médicas")
 public class SpecialtyController {
 
