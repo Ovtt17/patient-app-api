@@ -75,7 +75,7 @@ public class DoctorController {
 
     @Operation(summary = "Actualizar información médica del doctor")
     @PutMapping("/{userId}/medical-info")
-    @PreAuthorize("hasRole('ROLE_DOCTOR')")
+    @PreAuthorize("hasAuthority('doctor:update')")
     public ResponseEntity<DoctorResponseDTO> updateMedicalInfo(
             @Parameter(description = "UUID del usuario")
             @PathVariable UUID userId,
