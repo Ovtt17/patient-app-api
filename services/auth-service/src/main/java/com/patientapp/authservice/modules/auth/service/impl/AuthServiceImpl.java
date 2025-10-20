@@ -16,6 +16,7 @@ import com.patientapp.authservice.modules.notification.TemporaryPasswordRequest;
 import com.patientapp.authservice.modules.notification.UserCreatedRequest;
 import com.patientapp.authservice.modules.patient.client.PatientClient;
 import com.patientapp.authservice.modules.patient.dto.PatientRequestDTO;
+import com.patientapp.authservice.modules.role.enums.Roles;
 import com.patientapp.authservice.modules.role.service.interfaces.RoleService;
 import com.patientapp.authservice.modules.token.entity.Token;
 import com.patientapp.authservice.modules.token.repository.TokenRepository;
@@ -45,8 +46,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static com.patientapp.authservice.modules.role.enums.Roles.DOCTOR;
-import static com.patientapp.authservice.modules.role.enums.Roles.PACIENTE;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
 /**
@@ -78,12 +77,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public String register(RegisterRequest request) {
-        verifyPasswordComparison(request.password(), request.confirmPassword());
         String username = generateUsernameFromEmail(request.email());
         checkUserExistence(request.email(), username);
         checkPhoneExistence(request.phone());
 
-        var patientRole = roleService.findByNameOrThrow(PACIENTE.name());
+        var role = roleService.findByNameOrThrow(request.role().name());
+        String tempPassword = generateTemporaryPassword();
 
         var user = User.builder()
                 .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
@@ -91,29 +90,63 @@ public class AuthServiceImpl implements AuthService {
                 .email(NullSafe.ifNotBlankOrNull(request.email()))
                 .username(username)
                 .phone(NullSafe.ifNotBlankOrNull(request.phone()))
-                .password(passwordEncoder.encode(request.password()))
+                .gender(request.gender())
                 .accountLocked(false)
-                .enabled(false)
-                .mustChangePassword(false)
+                .enabled(true) // habilitado porque debe cambiar la contraseña en el primer login
+                .password(passwordEncoder.encode(tempPassword))
+                .mustChangePassword(true)
                 .provider(AuthProvider.LOCAL)
-                .roles(List.of(patientRole))
+                .roles(List.of(role))
                 .build();
 
         var userSaved = userService.save(user);
 
-        patientClient.create(
-                PatientRequestDTO.builder()
-                        .firstName(userSaved.getFirstName())
-                        .lastName(userSaved.getLastName())
-                        .email(userSaved.getEmail())
-                        .phone(userSaved.getPhone())
-                        .gender(userSaved.getGender())
-                        .profilePictureUrl(userSaved.getProfilePicture())
-                        .userId(userSaved.getId())
-                        .build()
+        // Crear perfil en el microservicio correspondiente
+        if (request.role().name().equalsIgnoreCase(Roles.DOCTOR.name())) {
+            createDoctorProfile(userSaved);
+        } else {
+            createPatientProfile(userSaved);
+        }
+
+        // Notificación de contraseña temporal
+        notificationProducer.sendTemporaryPasswordEvent(
+            TemporaryPasswordRequest.builder()
+                .firstName(userSaved.getFirstName())
+                .email(userSaved.getEmail())
+                .temporaryPassword(tempPassword)
+                .loginUrl(frontendUrl + "/login")
+                .build()
         );
-        notifyUserCreated(userSaved);
-        return "Te has registrado con éxito. Por favor, revisa tu correo electrónico para activar tu cuenta.";
+
+        return "Usuario registrado con éxito. La contraseña temporal ha sido enviada al correo electrónico.";
+    }
+
+    private void createDoctorProfile(User userSaved) {
+        doctorClient.create(
+            DoctorRequestDTO.builder()
+                .firstName(userSaved.getFirstName())
+                .lastName(userSaved.getLastName())
+                .email(userSaved.getEmail())
+                .phone(userSaved.getPhone())
+                .gender(userSaved.getGender())
+                .profilePictureUrl(userSaved.getProfilePicture())
+                .userId(userSaved.getId())
+                .build()
+        );
+    }
+
+    private void createPatientProfile(User userSaved) {
+        patientClient.create(
+            PatientRequestDTO.builder()
+                .firstName(userSaved.getFirstName())
+                .lastName(userSaved.getLastName())
+                .email(userSaved.getEmail())
+                .phone(userSaved.getPhone())
+                .gender(userSaved.getGender())
+                .profilePictureUrl(userSaved.getProfilePicture())
+                .userId(userSaved.getId())
+                .build()
+        );
     }
 
     /**
@@ -131,60 +164,6 @@ public class AuthServiceImpl implements AuthService {
                 .confirmationUrl(frontendUrl + "/activar-cuenta?token=" + activationToken)
                 .build();
         notificationProducer.sendUserCreatedEvent(userCreatedRequest);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Transactional
-    public String registerDoctor(DoctorRequestDTO request) {
-        String username = generateUsernameFromEmail(request.email());
-        checkUserExistence(request.email(), username);
-        checkPhoneExistence(request.phone());
-
-        String tempPassword = generateTemporaryPassword();
-
-        var doctorRole = roleService.findByNameOrThrow(DOCTOR.name());
-
-        var user = User.builder()
-                .firstName(NullSafe.ifNotBlankOrNull(request.firstName()))
-                .lastName(NullSafe.ifNotBlankOrNull(request.lastName()))
-                .username(username)
-                .email(NullSafe.ifNotBlankOrNull(request.email()))
-                .phone(NullSafe.ifNotBlankOrNull(request.phone()))
-                .gender(request.gender())
-                .accountLocked(false)
-                .enabled(true) // enabled true because doctor will change the password at first login
-                .password(passwordEncoder.encode(tempPassword))
-                .mustChangePassword(true) // force to change password at first login
-                .roles(List.of(doctorRole))
-                .provider(AuthProvider.LOCAL)
-                .build();
-
-        var userSaved = userService.save(user);
-
-        doctorClient.create(
-                DoctorRequestDTO.builder()
-                        .firstName(userSaved.getFirstName())
-                        .lastName(userSaved.getLastName())
-                        .email(userSaved.getEmail())
-                        .phone(userSaved.getPhone())
-                        .gender(userSaved.getGender())
-                        .profilePictureUrl(userSaved.getProfilePicture())
-                        .userId(userSaved.getId())
-                        .build()
-        );
-
-        notificationProducer.sendTemporaryPasswordEvent(
-                TemporaryPasswordRequest.builder()
-                        .firstName(userSaved.getFirstName())
-                        .email(userSaved.getEmail())
-                        .temporaryPassword(tempPassword)
-                        .loginUrl(frontendUrl + "/login")
-                        .build()
-        );
-        return "Doctor registrado con éxito. La contraseña temporal ha sido enviada al correo electrónico.";
     }
 
     /**

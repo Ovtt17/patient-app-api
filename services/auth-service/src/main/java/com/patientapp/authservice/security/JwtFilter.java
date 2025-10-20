@@ -79,7 +79,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         return HttpMethod.POST.matches(method) && (
-                path.equals("/auth/register") ||
                         path.equals("/auth/login") ||
                         path.equals("/auth/activate-account") ||
                         path.equals("/auth/refresh")
