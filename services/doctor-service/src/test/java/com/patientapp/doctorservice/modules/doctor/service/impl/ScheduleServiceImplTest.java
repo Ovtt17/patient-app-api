@@ -68,8 +68,7 @@ class ScheduleServiceImplTest {
         requestDTO = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
                 startTime,
-                endTime,
-                doctor.getId()
+                endTime
         );
 
         responseDTO = ScheduleResponseDTO.builder()
@@ -111,8 +110,7 @@ class ScheduleServiceImplTest {
         ScheduleRequestDTO invalidRequest = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
                 endTime,
-                startTime,
-                doctor.getId()
+                startTime
         );
         assertThrows(IllegalArgumentException.class, () -> scheduleService.create(invalidRequest));
     }
@@ -188,8 +186,7 @@ class ScheduleServiceImplTest {
         ScheduleRequestDTO invalidRequest = new ScheduleRequestDTO(
                 DayOfWeek.MONDAY,
                 endTime,
-                startTime,
-                doctor.getId()
+                startTime
         );
         assertThrows(IllegalArgumentException.class, () -> scheduleService.update(1, invalidRequest));
     }
@@ -209,11 +206,11 @@ class ScheduleServiceImplTest {
     }
 
     @Test
-    void deleteAllByDoctorId_success() {
+    void deleteAllByUserId_success() {
         when(doctorService.getEntityByIdOrThrow(any())).thenReturn(doctor);
         when(scheduleRepository.findByDoctor(any())).thenReturn(List.of(schedule));
         doNothing().when(scheduleRepository).deleteAll(any());
-        assertDoesNotThrow(() -> scheduleService.deleteAllByDoctorId(doctor.getId()));
+        assertDoesNotThrow(() -> scheduleService.deleteAllByUserId(doctor.getId()));
         verify(scheduleRepository, times(1)).deleteAll(List.of(schedule));
     }
 }

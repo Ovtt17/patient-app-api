@@ -10,6 +10,7 @@ import com.patientapp.doctorservice.modules.doctor.mapper.ScheduleMapper;
 import com.patientapp.doctorservice.modules.doctor.repository.ScheduleRepository;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.ScheduleService;
+import com.patientapp.doctorservice.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final DoctorService doctorService;
     private final ScheduleMapper scheduleMapper;
+    private final JwtUtils jwtUtils;
 
     /**
      * {@inheritDoc}
@@ -33,9 +35,11 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     public ScheduleResponseDTO create(ScheduleRequestDTO request) {
         validateTimes(request.startTime(), request.endTime());
+        UUID userId = jwtUtils.getUserIdOrThrow();
+        Doctor doctor = doctorService.getEntityByUserIdOrThrow(userId);
 
         boolean conflict = scheduleRepository.existsConflict(
-                request.doctorId(),
+                doctor.getId(),
                 request.dayOfWeek(),
                 request.startTime(),
                 request.endTime(),
@@ -46,7 +50,6 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ScheduleConflictException("El horario se solapa con otro existente del doctor");
         }
 
-        Doctor doctor = doctorService.getEntityByIdOrThrow(request.doctorId());
         Schedule schedule = scheduleMapper.toEntity(request, doctor);
         return scheduleMapper.toResponseDTO(scheduleRepository.save(schedule));
     }
@@ -98,6 +101,22 @@ public class ScheduleServiceImpl implements ScheduleService {
         return schedules.stream().map(scheduleMapper::toResponseDTO).toList();
     }
 
+    @Override
+    public List<ScheduleResponseDTO> getByAuthenticatedDoctor() {
+        UUID userId = jwtUtils.getUserIdOrThrow();
+        Doctor doctor = doctorService.getEntityByUserIdOrThrow(userId);
+        List<Schedule> schedules = scheduleRepository.findByDoctor(doctor);
+        return schedules.stream().map(scheduleMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<ScheduleResponseDTO> getByAuthenticatedDoctorAndDay(DayOfWeek dayOfWeek) {
+        UUID userId = jwtUtils.getUserIdOrThrow();
+        Doctor doctor = doctorService.getEntityByUserIdOrThrow(userId);
+        List<Schedule> schedules = scheduleRepository.findByDoctorAndDayOfWeek(doctor, dayOfWeek);
+        return schedules.stream().map(scheduleMapper::toResponseDTO).toList();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -138,8 +157,8 @@ public class ScheduleServiceImpl implements ScheduleService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteAllByDoctorId(UUID doctorId) {
-        Doctor doctor = doctorService.getEntityByIdOrThrow(doctorId);
+    public void deleteAllByUserId(UUID userId) {
+        Doctor doctor = doctorService.getEntityByUserIdOrThrow(userId);
         List<Schedule> schedules = scheduleRepository.findByDoctor(doctor);
         scheduleRepository.deleteAll(schedules);
     }
