@@ -2,7 +2,6 @@ package com.patientapp.authservice.config.oauth2;
 
 import com.patientapp.authservice.modules.user.entity.User;
 import com.patientapp.authservice.modules.user.enums.AuthProvider;
-import com.patientapp.authservice.modules.role.repository.RoleRepository;
 import com.patientapp.authservice.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -11,17 +10,13 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
-
-import static com.patientapp.authservice.modules.role.enums.Roles.PACIENTE;
 
 @Service
 @RequiredArgsConstructor
 public class DefaultOAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -51,9 +46,9 @@ public class DefaultOAuth2UserServiceImpl extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationException("Proveedor no soportado: " + registrationId);
         }
 
-        final String regIdFinal = registrationId;
         User user = userRepository.findByEmail(userInfo.email())
-                .orElseGet(() -> createdNewUser(userInfo, regIdFinal));
+                .orElseThrow(() -> new OAuth2AuthenticationException(
+                        "Usuario no encontrado. Solo se permite login de usuarios existentes."));
 
         return new CustomOAuth2User(user, oAuth2User.getAttributes());
     }
@@ -68,24 +63,4 @@ public class DefaultOAuth2UserServiceImpl extends DefaultOAuth2UserService {
         Object url = dataMap.get("url");
         return url != null ? url.toString() : null;
     }
-
-    private User createdNewUser(OAuthUserInfo info, String registrationId) {
-        var patientRole = roleRepository.findByName(PACIENTE.name())
-                .orElseThrow(() -> new IllegalStateException("ROL " + PACIENTE.name() + " no encontrado"));
-
-        return userRepository.save(
-                User.builder()
-                .firstName(info.givenName())
-                .lastName(info.familyName())
-                .username(info.email().split("@")[0])
-                .email(info.email())
-                .profilePicture(info.picture())
-                .enabled(true)
-                .accountLocked(false)
-                .provider(AuthProvider.valueOf(registrationId.toUpperCase()))
-                .roles(List.of(patientRole))
-                .build()
-        );
-    }
-
 }
