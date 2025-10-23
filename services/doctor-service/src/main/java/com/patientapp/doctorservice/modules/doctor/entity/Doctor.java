@@ -5,10 +5,7 @@ import com.patientapp.doctorservice.modules.doctor.enums.Gender;
 import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
@@ -50,6 +47,10 @@ public class Doctor extends BaseAuditingEntity {
 
     @Column
     private String officeNumber;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer appointmentDuration = 30;
 
     @Column(nullable = false)
     private boolean active;

@@ -21,16 +21,23 @@ CREATE TABLE doctor_unavailabilities
 
 CREATE TABLE doctors
 (
-    id                 BINARY(16)   NOT NULL,
-    created_by         VARCHAR(255) NOT NULL,
-    last_modified_by   VARCHAR(255) NULL,
-    created_date       datetime     NOT NULL,
-    last_modified_date datetime     NULL,
-    medical_license    VARCHAR(255) NULL,
-    office_number      VARCHAR(255) NULL,
-    active             BIT(1)       NOT NULL,
-    user_id            BINARY(16)   NOT NULL,
-    zone_id            VARCHAR(255) NOT NULL,
+    id                   BINARY(16)   NOT NULL,
+    created_by           VARCHAR(255) NOT NULL,
+    last_modified_by     VARCHAR(255) NULL,
+    created_date         datetime     NOT NULL,
+    last_modified_date   datetime     NULL,
+    first_name           VARCHAR(255) NOT NULL,
+    last_name            VARCHAR(255) NULL,
+    email                VARCHAR(255) NOT NULL,
+    gender               VARCHAR(255) NULL,
+    phone                VARCHAR(15)  NULL,
+    profile_picture      TEXT         NULL,
+    medical_license      VARCHAR(255) NULL,
+    office_number        VARCHAR(255) NULL,
+    appointment_duration INT          NOT NULL,
+    active               BIT(1)       NOT NULL,
+    user_id              BINARY(16)   NOT NULL,
+    zone_id              VARCHAR(255) NOT NULL,
     CONSTRAINT pk_doctors PRIMARY KEY (id)
 );
 
@@ -41,10 +48,10 @@ CREATE TABLE schedules
     last_modified_by   VARCHAR(255)       NULL,
     created_date       datetime           NOT NULL,
     last_modified_date datetime           NULL,
-    doctor_id          BINARY(16)         NOT NULL,
     day_of_week        VARCHAR(255)       NOT NULL,
     start_time         time               NOT NULL,
     end_time           time               NOT NULL,
+    doctor_id          BINARY(16)         NOT NULL,
     CONSTRAINT pk_schedules PRIMARY KEY (id)
 );
 
@@ -55,6 +62,9 @@ CREATE TABLE specialties
     `description` VARCHAR(250)       NULL,
     CONSTRAINT pk_specialties PRIMARY KEY (id)
 );
+
+ALTER TABLE doctors
+    ADD CONSTRAINT uc_doctors_email UNIQUE (email);
 
 ALTER TABLE doctors
     ADD CONSTRAINT uc_doctors_medicallicense UNIQUE (medical_license);

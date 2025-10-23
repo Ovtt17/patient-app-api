@@ -78,6 +78,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(NullSafe.ifNotBlankOrNull(request.lastName()));
         user.setPhone(NullSafe.ifNotBlankOrNull(request.phone()));
         user.setGender(request.gender());
+        user.setBiography(NullSafe.ifNotBlankOrNull(request.bio()));
 
         User userUpdated = userRepository.save(user);
 

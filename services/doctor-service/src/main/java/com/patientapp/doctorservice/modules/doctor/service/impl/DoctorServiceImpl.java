@@ -117,6 +117,10 @@ public class DoctorServiceImpl implements DoctorService {
         Set<Specialty> specialties = getValidatedSpecialties(request.specialtyIds());
         doctor.setSpecialties(specialties);
 
+        if(request.appointmentDuration() != null) {
+            doctor.setAppointmentDuration(request.appointmentDuration());
+        }
+
         Doctor doctorUpdated = doctorRepository.save(doctor);
         return doctorMapper.toDoctorResponse(doctorUpdated);
     }

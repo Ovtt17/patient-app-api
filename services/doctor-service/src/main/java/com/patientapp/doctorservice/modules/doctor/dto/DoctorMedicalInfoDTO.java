@@ -20,6 +20,9 @@ public record DoctorMedicalInfoDTO(
         )
         String officeNumber,
 
-        Set<@Positive(message = "El ID de especialidad debe ser positivo.") Integer> specialtyIds
+        Set<@Positive(message = "El ID de especialidad debe ser positivo.") Integer> specialtyIds,
+
+        @Positive(message = "La duración de la cita debe ser positiva.")
+        Integer appointmentDuration
 ) {
 }
