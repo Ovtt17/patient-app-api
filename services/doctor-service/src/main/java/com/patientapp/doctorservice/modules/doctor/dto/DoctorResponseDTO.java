@@ -1,6 +1,7 @@
 package com.patientapp.doctorservice.modules.doctor.dto;
 
 import com.patientapp.doctorservice.modules.doctor.enums.Gender;
+import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyResponseDTO;
 import lombok.Builder;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public record DoctorResponseDTO(
         String officeNumber,
         String userId,
         String zoneId,
-        List<String> specialties
+        Integer appointmentDuration,
+        List<SpecialtyResponseDTO> specialties
 ) {
 }

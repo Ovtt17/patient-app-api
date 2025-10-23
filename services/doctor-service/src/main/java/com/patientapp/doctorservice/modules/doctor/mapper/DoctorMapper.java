@@ -3,13 +3,19 @@ package com.patientapp.doctorservice.modules.doctor.mapper;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorRequestDTO;
 import com.patientapp.doctorservice.modules.doctor.dto.DoctorResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
-import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
+import com.patientapp.doctorservice.modules.specialty.mapper.SpecialtyMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class DoctorMapper {
+
+    private final SpecialtyMapper specialtyMapper;
+
+    public DoctorMapper(SpecialtyMapper specialtyMapper) {
+        this.specialtyMapper = specialtyMapper;
+    }
 
     public Doctor toEntity(DoctorRequestDTO request) {
         return Doctor.builder()
@@ -37,11 +43,13 @@ public class DoctorMapper {
                 .officeNumber(doctor.getOfficeNumber())
                 .userId(doctor.getUserId().toString())
                 .zoneId(doctor.getZoneId())
+                .appointmentDuration(doctor.getAppointmentDuration())
                 .specialties(
-                        doctor.getSpecialties() == null ? List.of() :
+                        doctor.getSpecialties() != null ?
                                 doctor.getSpecialties().stream()
-                                        .map(Specialty::getName)
+                                        .map(specialtyMapper::toResponseDTO)
                                         .toList()
+                                : List.of()
                 )
                 .build();
     }

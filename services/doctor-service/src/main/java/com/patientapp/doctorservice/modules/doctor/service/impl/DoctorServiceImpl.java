@@ -149,8 +149,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {
-        if (specialtyIds == null || specialtyIds.isEmpty()) return Set.of();
-
+        if (specialtyIds == null || specialtyIds.isEmpty()) return new HashSet<>();
         return fetchSpecialties(specialtyIds);
     }
 

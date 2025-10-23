@@ -8,15 +8,15 @@ import java.util.Set;
 public record DoctorMedicalInfoDTO(
         @Size(
                 min = 3,
-                max = 20,
-                message = "La licencia médica debe tener entre 3 y 20 caracteres."
+                max = 100,
+                message = "La licencia médica debe tener entre 3 y 100 caracteres."
         )
         String medicalLicense,
 
         @Size(
                 min = 1,
-                max = 10,
-                message = "El número de consultorio no puede ser mayor a 10 caracteres."
+                max = 50,
+                message = "El número de consultorio no puede ser mayor a 50 caracteres."
         )
         String officeNumber,
 
