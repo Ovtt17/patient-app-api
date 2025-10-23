@@ -29,7 +29,7 @@ public class AuthController {
      */
     @Operation(summary = "Registrar nuevo usuario", description = "Registra un nuevo usuario (paciente o doctor) con contraseña temporal y obligación de cambio en el primer inicio de sesión.")
     @PostMapping("/register")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('doctor:create')")
     public ResponseEntity<String> register(
             @RequestBody @Valid final RegisterRequest request
     ) {
