@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.util.UUID;
 
 public record ScheduleRequestDTO(
         @NotNull(message = "El día de la semana es obligatorio")
@@ -14,10 +13,7 @@ public record ScheduleRequestDTO(
         LocalTime startTime,
 
         @NotNull(message = "La hora de fin es obligatoria")
-        LocalTime endTime,
-
-        @NotNull(message = "El ID del doctor es obligatorio")
-        UUID doctorId
+        LocalTime endTime
 ) {
 }
 

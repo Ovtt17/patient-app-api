@@ -12,4 +12,10 @@ public interface DoctorAvailabilityService {
      * @return DoctorAvailabilityResponseDTO with available intervals and absences
      */
     DoctorAvailabilityResponseDTO getByDoctorId(UUID doctorId);
+    /**
+     * Gets the actual availability of the authenticated doctor, combining their working hours and absences.
+     *
+     * @return DoctorAvailabilityResponseDTO with available intervals and absences
+     */
+    DoctorAvailabilityResponseDTO getMyAvailability();
 }

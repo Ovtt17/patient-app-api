@@ -89,6 +89,27 @@ public interface ScheduleService {
      */
     List<ScheduleResponseDTO> getByDoctorIdAndDay(UUID doctorId, DayOfWeek dayOfWeek);
 
+
+    /**
+     * Gets all schedules for the authenticated doctor.
+     * <p>
+     * Returns all schedules associated with the currently authenticated doctor.
+     * </p>
+     *
+     * @return List of ScheduleResponseDTOs for the authenticated doctor
+     */
+    List<ScheduleResponseDTO> getByAuthenticatedDoctor();
+
+    /**
+     * Gets all schedules for the authenticated doctor on a specific day of the week.
+     * <p>
+     * Returns schedules associated with the currently authenticated doctor that fall on the given day of the week.
+     * </p>
+     *
+     * @param dayOfWeek Day of the week to filter schedules
+     * @return List of ScheduleResponseDTOs for the authenticated doctor on the specified day
+     */
+    List<ScheduleResponseDTO> getByAuthenticatedDoctorAndDay(DayOfWeek dayOfWeek);
     /**
      * Updates an existing schedule.
      * <p>
@@ -124,5 +145,5 @@ public interface ScheduleService {
      * @param doctorId UUID of the doctor whose schedules should be deleted
      * @throws DoctorNotFoundException if the doctor does not exist
      */
-    void deleteAllByDoctorId(UUID doctorId);
+    void deleteAllByUserId(UUID doctorId);
 }

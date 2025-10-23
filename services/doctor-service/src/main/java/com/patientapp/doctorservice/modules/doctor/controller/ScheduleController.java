@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
@@ -27,7 +26,6 @@ public class ScheduleController {
 
     @Operation(summary = "Crear un nuevo horario")
     @PostMapping
-    @Transactional
     public ResponseEntity<ScheduleResponseDTO> create(
             @Valid @RequestBody ScheduleRequestDTO request
     ) {
@@ -44,6 +42,19 @@ public class ScheduleController {
         List<ScheduleResponseDTO> schedules = (dayOfWeek != null)
                 ? scheduleService.getByDoctorIdAndDay(doctorId, dayOfWeek)
                 : scheduleService.getByDoctorId(doctorId);
+
+        return ResponseEntity.ok(schedules);
+    }
+
+    @Operation(summary = "Obtener todos los horarios del doctor autenticado (opcional filtrar por día)")
+    @GetMapping("/me")
+    public ResponseEntity<List<ScheduleResponseDTO>> getMySchedules(
+            @Parameter(description = "Día de la semana opcional para filtrar")
+            @RequestParam(required = false) DayOfWeek dayOfWeek
+    ) {
+        List<ScheduleResponseDTO> schedules = (dayOfWeek != null)
+                ? scheduleService.getByAuthenticatedDoctorAndDay(dayOfWeek)
+                : scheduleService.getByAuthenticatedDoctor();
 
         return ResponseEntity.ok(schedules);
     }
@@ -67,7 +78,6 @@ public class ScheduleController {
 
     @Operation(summary = "Eliminar un horario por ID")
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<?> delete(
             @Parameter(description = "ID del horario") @PathVariable Integer id
     ) {
@@ -75,14 +85,13 @@ public class ScheduleController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Eliminar todos los horarios de un doctor por su UUID")
-    @DeleteMapping("/doctor/{doctorId}")
-    @Transactional
+    @Operation(summary = "Eliminar todos los horarios de un doctor por su userId")
+    @DeleteMapping("/doctor/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> deleteAllByDoctorId(
-            @Parameter(description = "UUID del doctor") @PathVariable UUID doctorId
+    public ResponseEntity<?> deleteAllByUserId(
+            @Parameter(description = "UUID del doctor") @PathVariable UUID userId
     ) {
-        scheduleService.deleteAllByDoctorId(doctorId);
+        scheduleService.deleteAllByUserId(userId);
         return ResponseEntity.noContent().build();
     }
 }

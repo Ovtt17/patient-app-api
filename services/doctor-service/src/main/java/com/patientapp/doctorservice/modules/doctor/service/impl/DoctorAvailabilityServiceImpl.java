@@ -10,6 +10,7 @@ import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorAvai
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorUnavailabilityService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.ScheduleService;
+import com.patientapp.doctorservice.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     private final DoctorService doctorService;
     private final ScheduleService scheduleService;
     private final DoctorUnavailabilityService unavailabilityService;
+    private final JwtUtils jwtUtils;
 
     /**
      * {@inheritDoc}
@@ -48,6 +50,16 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
                 .zoneId(doctor.getZoneId())
                 .availability(availability)
                 .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DoctorAvailabilityResponseDTO getMyAvailability() {
+        UUID userId = jwtUtils.getUserIdOrThrow();
+        Doctor doctor = doctorService.getEntityByUserIdOrThrow(userId);
+        return getByDoctorId(doctor.getId());
     }
 
     /**
