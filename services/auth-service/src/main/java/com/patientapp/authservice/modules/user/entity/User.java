@@ -47,6 +47,8 @@ public class User implements UserDetails, Principal {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    private String biography;
+
     @Column
     private String password;
 

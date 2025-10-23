@@ -20,5 +20,7 @@ public record UserRequestDTO(
         String phone,
 
         @NotNull(message = "El género es obligatorio")
-        Gender gender
+        Gender gender,
+
+        String bio
 ) {}

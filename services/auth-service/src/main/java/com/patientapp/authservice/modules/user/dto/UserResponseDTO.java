@@ -1,5 +1,6 @@
 package com.patientapp.authservice.modules.user.dto;
 
+import com.patientapp.authservice.modules.user.enums.Gender;
 import lombok.Builder;
 
 import java.util.List;
@@ -15,5 +16,7 @@ public record UserResponseDTO(
         String username,
         String profilePictureUrl,
         List<String> roles,
+        Gender gender,
+        String bio,
         boolean mustChangePassword
 ) {}

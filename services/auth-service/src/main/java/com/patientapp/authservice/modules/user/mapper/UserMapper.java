@@ -23,6 +23,8 @@ public class UserMapper {
                 .phone(NullSafe.ifNotBlankOrNull(user.getPhone()))
                 .username(NullSafe.ifNotBlankOrNull(user.getUsername()))
                 .profilePictureUrl(NullSafe.ifNotBlankOrNull(user.getProfilePicture()))
+                .gender(user.getGender())
+                .bio(NullSafe.ifNotBlankOrNull(user.getBiography()))
                 .roles(user.getRoles().stream()
                         .map(Role::getName)
                         .toList())
