@@ -12,6 +12,18 @@ import static com.patientapp.authservice.modules.role.enums.Permissions.*;
 @RequiredArgsConstructor
 @Getter
 public enum Roles {
+    SUPER_ADMIN(
+            Set.of(
+                    ADMIN_CREATE,
+                    ADMIN_READ,
+                    ADMIN_UPDATE,
+                    ADMIN_DELETE,
+                    DOCTOR_CREATE,
+                    DOCTOR_READ,
+                    DOCTOR_UPDATE,
+                    DOCTOR_DELETE
+            )
+    ),
     ADMIN(
             Set.of(
                     ADMIN_CREATE,

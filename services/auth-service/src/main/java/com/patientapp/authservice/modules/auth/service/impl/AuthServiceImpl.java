@@ -101,13 +101,6 @@ public class AuthServiceImpl implements AuthService {
 
         var userSaved = userService.save(user);
 
-        // Crear perfil en el microservicio correspondiente
-        if (request.role().name().equalsIgnoreCase(Roles.DOCTOR.name())) {
-            createDoctorProfile(userSaved);
-        } else {
-            createPatientProfile(userSaved);
-        }
-
         // Notificación de contraseña temporal
         notificationProducer.sendTemporaryPasswordEvent(
             TemporaryPasswordRequest.builder()
@@ -117,6 +110,13 @@ public class AuthServiceImpl implements AuthService {
                 .loginUrl(frontendUrl + "/login")
                 .build()
         );
+
+        // Crear perfil en el microservicio correspondiente
+        if (request.role().name().equalsIgnoreCase(Roles.DOCTOR.name())) {
+            createDoctorProfile(userSaved);
+        } else {
+            createPatientProfile(userSaved);
+        }
 
         return "Usuario registrado con éxito. La contraseña temporal ha sido enviada al correo electrónico.";
     }

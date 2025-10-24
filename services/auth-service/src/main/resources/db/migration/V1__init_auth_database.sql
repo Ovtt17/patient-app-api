@@ -37,6 +37,8 @@ CREATE TABLE users
     last_name            VARCHAR(255) NULL,
     email                VARCHAR(255) NOT NULL,
     username             VARCHAR(255) NOT NULL,
+    gender               VARCHAR(255) NULL,
+    biography            VARCHAR(255) NULL,
     password             VARCHAR(255) NULL,
     must_change_password BIT(1)       NOT NULL,
     provider             VARCHAR(255) NOT NULL,
