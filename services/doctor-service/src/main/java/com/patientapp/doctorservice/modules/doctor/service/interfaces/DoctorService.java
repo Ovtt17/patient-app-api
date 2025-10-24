@@ -5,6 +5,7 @@ import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundE
 import com.patientapp.doctorservice.modules.doctor.dto.*;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface DoctorService {
@@ -25,12 +26,19 @@ public interface DoctorService {
      * @param sortOrder sort direction ("asc" or "desc")
      * @return {@link DoctorPagedResponseDTO} containing the requested page of active doctors
      */
-    DoctorPagedResponseDTO getAllActive(
+    DoctorPagedResponseDTO getAllActivePaged(
             int page,
             int size,
             String sortBy,
             String sortOrder
     );
+
+    /**
+     * Retrieves a list of all active doctors.
+     *
+     * @return List of DoctorResponseDTO representing all active doctors
+     */
+    List<DoctorResponseDTO> getAllActive();
 
     /**
      * Retrieves a doctor by their unique ID.

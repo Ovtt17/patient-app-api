@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,15 +32,24 @@ public class DoctorController {
     }
 
     @Operation(summary = "Obtener todos los doctores activos")
-    @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<DoctorPagedResponseDTO> getAllActive(
+    @GetMapping("/all")
+    public ResponseEntity<List<DoctorResponseDTO>> getAllActive() {
+        var doctors = doctorService.getAllActive();
+        if (doctors == null || doctors.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(doctors);
+    }
+
+    @Operation(summary = "Obtener todos los doctores activos")
+    @GetMapping("/paged")
+    public ResponseEntity<DoctorPagedResponseDTO> getAllActivePaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdDate") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortOrder
     ) {
-        var doctors = doctorService.getAllActive(page, size, sortBy, sortOrder);
+        var doctors = doctorService.getAllActivePaged(page, size, sortBy, sortOrder);
         if (doctors == null) {
             return ResponseEntity.noContent().build();
         }
@@ -64,6 +74,7 @@ public class DoctorController {
     }
 
     @PutMapping("/{userId}/basic-info")
+    @PreAuthorize("hasAuthority('doctor:update')")
     public ResponseEntity<Void> updateBasicInfo(
             @Parameter(description = "UUID del usuario")
             @PathVariable UUID userId,
