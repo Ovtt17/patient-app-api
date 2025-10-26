@@ -1,17 +1,14 @@
 package com.patientapp.doctorservice.modules.doctor.controller;
 
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorAvailabilityResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorDayAvailabilityResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorMonthAvailabilityResponseDTO;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorAvailabilityService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.UUID;
 
 @RestController
@@ -22,19 +19,21 @@ public class DoctorAvailabilityController {
 
     private final DoctorAvailabilityService doctorAvailabilityService;
 
-    @Operation(summary = "Obtener disponibilidad real de un doctor")
-    @GetMapping("/{doctorId}")
-    public ResponseEntity<DoctorAvailabilityResponseDTO> getByDoctorId(
-            @Parameter(description = "UUID del doctor")
-            @PathVariable UUID doctorId
+    @GetMapping("/{doctorId}/month-availability")
+    public DoctorMonthAvailabilityResponseDTO getDoctorAvailabilityByMonth(
+            @PathVariable UUID doctorId,
+            @RequestParam int month
     ) {
-        DoctorAvailabilityResponseDTO availability = doctorAvailabilityService.getByDoctorId(doctorId);
-        return ResponseEntity.ok(availability);
+        return doctorAvailabilityService.getByDoctorIdAndMonth(doctorId, Month.of(month));
     }
 
-    @Operation(summary = "Obtener disponibilidad del doctor con sesión iniciada")
-    @GetMapping("/me")
-    public ResponseEntity<DoctorAvailabilityResponseDTO> getMyAvailability() {
-        return ResponseEntity.ok(doctorAvailabilityService.getMyAvailability());
+
+    @GetMapping("/{doctorId}/day-availability")
+    public DoctorDayAvailabilityResponseDTO getByDoctorAndDay(
+            @PathVariable UUID doctorId,
+            @RequestParam String date // 'YYYY-MM-DD'
+    ) {
+        LocalDate localDate = LocalDate.parse(date);
+        return doctorAvailabilityService.getByDoctorIdAndDay(doctorId, localDate);
     }
 }
