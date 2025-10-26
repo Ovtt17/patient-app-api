@@ -30,7 +30,7 @@ public class SuperAdminService {
     @Transactional
     public void createSuperAdmin() {
         if (userRepository.existsByEmail(superAdminEmail)) {
-            throw new IllegalArgumentException("User already exists");
+            return;
         }
 
         // TODO: Change to ADMIN role to SUPER_ADMIN
