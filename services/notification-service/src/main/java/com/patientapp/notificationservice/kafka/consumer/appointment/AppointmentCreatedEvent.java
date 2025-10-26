@@ -9,6 +9,6 @@ public record AppointmentCreatedEvent(
         String doctorName,
         String doctorEmail,
         String doctorZoneId,
-        Instant appointmentDate
+        Instant appointmentStart
 ) {
 }

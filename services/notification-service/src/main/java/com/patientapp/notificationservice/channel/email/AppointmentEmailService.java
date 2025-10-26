@@ -32,7 +32,7 @@ public class AppointmentEmailService extends EmailService {
     @Async
     public CompletableFuture<Boolean> sendAppointmentCreatedEmailToPatient(AppointmentCreatedEvent event) {
         // TODO: Assign time zone based on patient's profile, for now using system default
-        String formattedDateTime = formatInstantForZone(event.appointmentDate(), null);
+        String formattedDateTime = formatInstantForZone(event.appointmentStart(), null);
 
         Map<String, Object> variables = Map.of(
                 "appointmentId", event.appointmentId(),
@@ -51,7 +51,7 @@ public class AppointmentEmailService extends EmailService {
 
     @Async
     public CompletableFuture<Boolean> sendAppointmentCreatedEmailToDoctor(AppointmentCreatedEvent event) {
-        String formattedDateTime = formatInstantForZone(event.appointmentDate(), event.doctorZoneId());
+        String formattedDateTime = formatInstantForZone(event.appointmentStart(), event.doctorZoneId());
 
         Map<String, Object> variables = Map.of(
                 "appointmentId", event.appointmentId(),
