@@ -1,6 +1,5 @@
 package com.patientapp.appointmentservice.modules.doctor.dto;
 
-import java.util.List;
 import java.util.UUID;
 
 public record DoctorResponse(
@@ -13,6 +12,6 @@ public record DoctorResponse(
         String officeNumber,
         String userId,
         String zoneId,
-        List<String> specialties
+        Integer appointmentDuration
 ) {
 }

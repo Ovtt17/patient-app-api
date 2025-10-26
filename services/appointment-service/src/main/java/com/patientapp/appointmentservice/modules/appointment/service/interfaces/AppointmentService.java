@@ -7,7 +7,9 @@ import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentStatus;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -81,4 +83,17 @@ public interface AppointmentService {
      * @param appointmentId ID of the appointment to cancel
      */
     void cancel(Long appointmentId);
+
+    /**
+     * Retrieves a map of appointment counts for a specific doctor by date within a given month and year.
+     *
+     * @param doctorId UUID of the doctor
+     * @param year the year to filter appointments
+     * @param month the month to filter appointments
+     * @return Map with LocalDate as key and count of appointments as value
+     */
+    Map<LocalDate, Long> getAppointmentCountByDoctorAndMonth(UUID doctorId, int year, int month);
+
+    List<Instant> getAppointmentsByDoctorAndDay(UUID doctorId, LocalDate date);
+
 }

@@ -1,9 +1,7 @@
 package com.patientapp.appointmentservice.modules.appointment.service.impl;
 
 import com.patientapp.appointmentservice.common.utils.AuthUtil;
-import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentFilterDTO;
-import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentRequestDTO;
-import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentResponseDTO;
+import com.patientapp.appointmentservice.modules.appointment.dto.*;
 import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentStatus;
 import com.patientapp.appointmentservice.modules.appointment.mapper.AppointmentMapper;
@@ -19,10 +17,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,17 +34,33 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorClient doctorClient;
     private final NotificationProducer notificationProducer;
 
+    private static final ZoneId ZONE = ZoneId.of("America/Managua");
+
+
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
     public AppointmentResponseDTO create(AppointmentRequestDTO request) {
-        Appointment appointment = mapper.toEntity(request);
+        PatientResponse patient = patientClient.getByUserId(request.userId());
+        DoctorResponse doctor = doctorClient.getById(request.doctorId());
+
+        AppointmentRequestDTO requestWithIds = AppointmentRequestDTO.builder()
+                .doctorId(doctor.id())
+                .patientId(patient.id())
+                .appointmentStart(request.appointmentStart())
+                .reason(request.reason())
+                .userId(request.userId())
+                .build();
+
+        Appointment appointment = mapper.toEntity(requestWithIds);
         appointment.setStatus(AppointmentStatus.PENDIENTE);
+
+        int durationMinutes = doctor.appointmentDuration();
+        appointment.setPlannedDurationMinutes(durationMinutes);
+
         Appointment appointmentSaved = repository.save(appointment);
-        PatientResponse patient = patientClient.getById(appointment.getPatientId());
-        DoctorResponse doctor = doctorClient.getById(appointment.getDoctorId());
 
         var appointCreatedRequest = AppointmentCreatedRequest.builder()
                 .appointmentId(appointmentSaved.getId().toString())
@@ -53,7 +69,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .doctorName(doctor.firstName())
                 .doctorEmail(doctor.email())
                 .doctorZoneId(doctor.zoneId())
-                .appointmentDate(appointmentSaved.getAppointmentDate())
+                .appointmentStart(appointmentSaved.getAppointmentStart())
                 .build();
 
         notificationProducer.sendAppointmentCreatedEvent(appointCreatedRequest);
@@ -87,7 +103,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             Instant fromDate
     ) {
         Instant from = fromDate != null ? fromDate : Instant.now().plus(7, ChronoUnit.DAYS);
-        List<Appointment> appointments = repository.findByDoctorIdAndAppointmentDateAfter(
+        List<Appointment> appointments = repository.findByDoctorIdAndAppointmentStartAfter(
                 doctorId,
                 from
         );
@@ -108,7 +124,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             Instant fromDate
     ) {
         Instant from = fromDate != null ? fromDate : Instant.now().plus(7, ChronoUnit.DAYS);
-        List<Appointment> appointments = repository.findByPatientIdAndAppointmentDateAfter(
+        List<Appointment> appointments = repository.findByPatientIdAndAppointmentStartAfter(
                 patientId,
                 from
         );
@@ -163,4 +179,31 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setCancelledDate(Instant.now());
         repository.save(appointment);
     }
+
+    @Override
+    public Map<LocalDate, Long> getAppointmentCountByDoctorAndMonth(UUID doctorId, int year, int month) {
+        YearMonth ym = YearMonth.of(year, month);
+        Instant start = ym.atDay(1).atStartOfDay(ZONE).toInstant();
+        Instant end = ym.atEndOfMonth().atTime(23, 59, 59).atZone(ZONE).toInstant();
+
+        List<Object[]> rawResults = repository.countAppointmentsByDoctorAndDateRaw(doctorId, start, end);
+
+        List<AppointmentDayCountDTO> results = rawResults.stream()
+                .map(o -> new AppointmentDayCountDTO(
+                        ((java.sql.Date) o[0]).toLocalDate(),
+                        ((Number) o[1]).longValue()
+                ))
+                .toList();
+        return results.stream()
+                .collect(Collectors.toMap(AppointmentDayCountDTO::getDate, AppointmentDayCountDTO::getCount));
+    }
+
+    @Override
+    public List<Instant> getAppointmentsByDoctorAndDay(UUID doctorId, LocalDate date) {
+        Instant dayStart = date.atStartOfDay(ZONE).toInstant();
+        Instant dayEnd = date.atTime(LocalTime.MAX).atZone(ZONE).toInstant();
+
+        return repository.findAppointmentsByDoctorAndDay(doctorId, dayStart, dayEnd);
+    }
+
 }

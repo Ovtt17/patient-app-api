@@ -31,19 +31,24 @@ public class Appointment extends BaseAuditingEntity {
     private UUID patientId;
 
     @Column(nullable = false)
-    Instant appointmentDate;
+    private Instant appointmentStart;              // Hora de inicio de la cita enviada por el frontend
 
-    private Integer estimatedDurationMinutes;
-    private Instant endTime;
+    @Column(nullable = false)
+    private Integer plannedDurationMinutes;        // Duración límite/estimada de la cita según el doctor (ej. 30 min)
 
-    private String reason;
+    private Instant appointmentEnd;                // Hora exacta en que finalizó la cita (se asigna al finalizar)
 
-    private String notes;
+    private Integer actualDurationMinutes;         // Duración real de la cita en minutos (calculada al finalizar)
+
+    @Column(nullable = false)
+    private String reason;                          // Motivo obligatorio de la cita
+
+    private String notes;                           // Notas internas u observaciones
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private AppointmentStatus status;
+    private AppointmentStatus status;               // Estado: SCHEDULED, CANCELLED, COMPLETED, etc.
 
-    private UUID cancelledBy; // User ID who cancelled the appointment
-    private Instant cancelledDate;
+    private UUID cancelledBy;                        // Usuario que canceló la cita
+    private Instant cancelledDate;                  // Fecha de cancelación
 }
