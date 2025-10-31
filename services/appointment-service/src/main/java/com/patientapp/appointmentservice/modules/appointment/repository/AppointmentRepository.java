@@ -3,6 +3,7 @@ package com.patientapp.appointmentservice.modules.appointment.repository;
 import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,10 +13,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-    List<Appointment> findByDoctorIdAndAppointmentStartAfter(UUID doctorId, Instant fromDate);
+public interface AppointmentRepository extends JpaRepository<Appointment, Long>, JpaSpecificationExecutor<Appointment> {
+    List<Appointment> findAllByDoctorId(UUID doctorId);
 
-    List<Appointment> findByPatientIdAndAppointmentStartAfter(UUID patientId, Instant fromDate);
+    List<Appointment> findAllByPatientId(UUID patientId);
     @Query("""
         SELECT a FROM Appointment a
         WHERE (:doctorId IS NULL OR a.doctorId = :doctorId)
@@ -24,10 +25,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
           AND (:startDate IS NULL OR a.appointmentStart >= :startDate)
           AND (:endDate IS NULL OR a.appointmentStart <= :endDate)
         """)
-    List<Appointment> findFiltered(UUID doctorId, UUID patientId,
-                                   AppointmentStatus status,
-                                   Instant startDate,
-                                   Instant endDate);
+    List<Appointment> findAllFiltered(UUID doctorId, UUID patientId,
+                                      AppointmentStatus status,
+                                      Instant startDate,
+                                      Instant endDate);
 
 
     @Query("""

@@ -10,7 +10,9 @@ import java.util.UUID;
 public record AppointmentResponseDTO(
         Long id,
         UUID doctorId,
+        String doctorName,
         UUID patientId,
+        String patientName,
         Instant appointmentStart,
         Instant appointmentEnd,
         Integer plannedDurationMinutes,

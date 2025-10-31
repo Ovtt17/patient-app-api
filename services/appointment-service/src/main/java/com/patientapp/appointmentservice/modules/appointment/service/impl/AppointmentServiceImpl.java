@@ -1,11 +1,15 @@
 package com.patientapp.appointmentservice.modules.appointment.service.impl;
 
 import com.patientapp.appointmentservice.common.utils.AuthUtil;
-import com.patientapp.appointmentservice.modules.appointment.dto.*;
+import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentDayCountDTO;
+import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentFilterDTO;
+import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentRequestDTO;
+import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentResponseDTO;
 import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentStatus;
 import com.patientapp.appointmentservice.modules.appointment.mapper.AppointmentMapper;
 import com.patientapp.appointmentservice.modules.appointment.repository.AppointmentRepository;
+import com.patientapp.appointmentservice.modules.appointment.repository.AppointmentSpecifications;
 import com.patientapp.appointmentservice.modules.appointment.service.interfaces.AppointmentService;
 import com.patientapp.appointmentservice.modules.doctor.client.DoctorClient;
 import com.patientapp.appointmentservice.modules.doctor.dto.DoctorResponse;
@@ -14,11 +18,11 @@ import com.patientapp.appointmentservice.modules.notification.NotificationProduc
 import com.patientapp.appointmentservice.modules.patient.client.PatientClient;
 import com.patientapp.appointmentservice.modules.patient.dto.PatientResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -73,7 +77,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .build();
 
         notificationProducer.sendAppointmentCreatedEvent(appointCreatedRequest);
-        return mapper.toResponse(appointmentSaved);
+        return mapper.toResponse(appointmentSaved, doctor, patient);
     }
 
     /**
@@ -82,7 +86,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentResponseDTO getById(Long appointmentId) {
         Appointment appointment = getEntityByIdOrThrow(appointmentId);
-        return mapper.toResponse(appointment);
+
+        DoctorResponse doctor = doctorClient.getById(appointment.getDoctorId());
+        PatientResponse patient = patientClient.getById(appointment.getPatientId());
+
+        return mapper.toResponse(appointment, doctor, patient);
     }
 
     /**
@@ -102,16 +110,27 @@ public class AppointmentServiceImpl implements AppointmentService {
             UUID doctorId,
             Instant fromDate
     ) {
-        Instant from = fromDate != null ? fromDate : Instant.now().plus(7, ChronoUnit.DAYS);
-        List<Appointment> appointments = repository.findByDoctorIdAndAppointmentStartAfter(
-                doctorId,
-                from
-        );
+        List<Appointment> appointments = repository.findAllByDoctorId(doctorId);
 
         if (appointments.isEmpty()) return List.of();
 
+        DoctorResponse doctor = doctorClient.getById(doctorId);
+
+        List<UUID> patientIds = appointments.stream()
+                .map(Appointment::getPatientId)
+                .distinct()
+                .toList();
+
+        List<PatientResponse> patients = patientClient.getByIds(patientIds);
+
+        Map<UUID, PatientResponse> patientMap = patients.stream()
+                .collect(Collectors.toMap(PatientResponse::id, p -> p));
+
         return appointments.stream()
-                .map(mapper::toResponse)
+                .map(appointment -> {
+                    PatientResponse patient = patientMap.get(appointment.getPatientId());
+                    return mapper.toResponse(appointment, doctor, patient);
+                })
                 .toList();
     }
 
@@ -123,16 +142,17 @@ public class AppointmentServiceImpl implements AppointmentService {
             UUID patientId,
             Instant fromDate
     ) {
-        Instant from = fromDate != null ? fromDate : Instant.now().plus(7, ChronoUnit.DAYS);
-        List<Appointment> appointments = repository.findByPatientIdAndAppointmentStartAfter(
-                patientId,
-                from
-        );
+        List<Appointment> appointments = repository.findAllByPatientId(patientId);
 
         if (appointments.isEmpty()) return List.of();
 
+        PatientResponse patient = patientClient.getById(patientId);
+
         return appointments.stream()
-                .map(mapper::toResponse)
+                .map(appointment -> {
+                    DoctorResponse doctor = doctorClient.getById(appointment.getDoctorId());
+                    return mapper.toResponse(appointment, doctor, patient);
+                })
                 .toList();
     }
 
@@ -141,14 +161,35 @@ public class AppointmentServiceImpl implements AppointmentService {
      */
     @Override
     public List<AppointmentResponseDTO> getAllFiltered(AppointmentFilterDTO filter) {
-        return repository.findFiltered(
-                        filter.doctorId(),
-                        filter.patientId(),
-                        filter.status(),
-                        filter.startDate(),
-                        filter.endDate()
-                ).stream()
-                .map(mapper::toResponse)
+        Specification<Appointment> spec = AppointmentSpecifications.filterAppointments(filter);
+
+        var appointments = repository.findAll(spec);
+
+        if (appointments.isEmpty()) return List.of();
+
+        // Caso mixto o sin filtros: resolver con batch doble
+        List<UUID> doctorIds = appointments.stream()
+                .map(Appointment::getDoctorId)
+                .distinct()
+                .toList();
+
+        List<UUID> patientIds = appointments.stream()
+                .map(Appointment::getPatientId)
+                .distinct()
+                .toList();
+
+        Map<UUID, DoctorResponse> doctorMap = doctorClient.getByIds(doctorIds).stream()
+                .collect(Collectors.toMap(DoctorResponse::id, d -> d));
+
+        Map<UUID, PatientResponse> patientMap = patientClient.getByIds(patientIds).stream()
+                .collect(Collectors.toMap(PatientResponse::id, p -> p));
+
+        return appointments.stream()
+                .map(appointment -> {
+                    DoctorResponse doctor = doctorMap.get(appointment.getDoctorId());
+                    PatientResponse patient = patientMap.get(appointment.getPatientId());
+                    return mapper.toResponse(appointment, doctor, patient);
+                })
                 .toList();
     }
 
@@ -157,10 +198,10 @@ public class AppointmentServiceImpl implements AppointmentService {
      */
     @Override
     @Transactional
-    public void updateStatus(Long appointmentId, AppointmentStatus status) {
+    public Long updateStatus(Long appointmentId, AppointmentStatus status) {
         Appointment appointment = getEntityByIdOrThrow(appointmentId);
         appointment.setStatus(status);
-        repository.save(appointment);
+        return repository.save(appointment).getId();
     }
 
     /**

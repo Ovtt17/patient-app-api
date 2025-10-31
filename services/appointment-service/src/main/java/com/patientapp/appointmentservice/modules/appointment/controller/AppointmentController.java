@@ -78,15 +78,14 @@ public class AppointmentController {
 
     @Operation(summary = "Actualizar estado de una cita", description = "Permite actualizar el estado de una cita (PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA)")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateStatus(
+    public ResponseEntity<Long> updateStatus(
             @Parameter(description = "ID de la cita", required = true, example = "1")
             @PathVariable("id") Long appointmentId,
 
             @Parameter(description = "Nuevo estado de la cita", required = true, example = "CONFIRMADA")
             @RequestParam AppointmentStatus status
     ) {
-        appointmentService.updateStatus(appointmentId, status);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(appointmentService.updateStatus(appointmentId, status));
     }
 
     @Operation(summary = "Cancelar una cita", description = "Permite cancelar una cita y registra quién la canceló")

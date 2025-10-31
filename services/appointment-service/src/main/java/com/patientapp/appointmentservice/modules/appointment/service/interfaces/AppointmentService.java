@@ -75,7 +75,7 @@ public interface AppointmentService {
      * @param appointmentId ID of the appointment
      * @param status new {@link AppointmentStatus} to set
      */
-    void updateStatus(Long appointmentId, AppointmentStatus status);
+    Long updateStatus(Long appointmentId, AppointmentStatus status);
 
     /**
      * Cancels an appointment, setting its status and cancellation metadata.
