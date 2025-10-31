@@ -18,5 +18,7 @@ public record UserResponseDTO(
         List<String> roles,
         Gender gender,
         String bio,
-        boolean mustChangePassword
+        boolean mustChangePassword,
+        UUID patientId,
+        UUID doctorId
 ) {}
