@@ -44,7 +44,7 @@ public class DoctorServiceImpl implements DoctorService {
      * {@inheritDoc}
      */
     @Override
-    public DoctorPagedResponseDTO getAllActive(
+    public DoctorPagedResponseDTO getAllActivePaged(
             int page,
             int size,
             String sortBy,
@@ -70,6 +70,17 @@ public class DoctorServiceImpl implements DoctorService {
                 .totalPages(doctors.getTotalPages())
                 .totalElements(doctors.getTotalElements())
                 .build();
+    }
+
+    @Override
+    public List<DoctorResponseDTO> getAllActive() {
+        List<Doctor> doctors = doctorRepository.findAllByActiveTrue();
+        if (doctors.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return doctors.stream()
+                .map(doctorMapper::toDoctorResponse)
+                .toList();
     }
 
     /**

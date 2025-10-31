@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,5 +15,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     // Find a doctor by userId from Auth Service
     Optional<Doctor> findByUserIdAndActiveTrue(UUID userId);
     Page<Doctor> findAllByActiveTrue(Pageable pageable);
+    List<Doctor> findAllByActiveTrue();
     Optional<Doctor> findByIdAndActiveTrue(UUID id);
 }

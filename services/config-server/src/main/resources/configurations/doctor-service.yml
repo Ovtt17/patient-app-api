@@ -29,3 +29,4 @@ application:
             secret-key: ${JWT_SECRET_KEY}
     config:
         auth-url: ${AUTH_SERVICE_URL}
+        appointment-url: ${APPOINTMENT_SERVICE_URL}

@@ -42,6 +42,7 @@ public class RoleAndPermissionInitializer {
                     .collect(Collectors.toSet());
             Set<Permission> patientPermissions = Set.of();
 
+            createRoleIfNotExists(SUPER_ADMIN.name(), adminPermissions);
             createRoleIfNotExists(ADMIN.name(), adminPermissions);
             createRoleIfNotExists(DOCTOR.name(), doctorPermissions);
             createRoleIfNotExists(PACIENTE.name(), patientPermissions);

@@ -1,8 +1,9 @@
 package com.patientapp.doctorservice.modules.doctor.service.impl;
 
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorAvailabilityResponseDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorAvailabilityResponseDTO.DayAvailabilityDTO;
-import com.patientapp.doctorservice.modules.doctor.dto.DoctorAvailabilityResponseDTO.IntervalDTO;
+import com.patientapp.doctorservice.modules.appointment.client.AppointmentClient;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorDayAvailabilityResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.DoctorMonthAvailabilityResponseDTO;
+import com.patientapp.doctorservice.modules.doctor.dto.IntervalDTO;
 import com.patientapp.doctorservice.modules.doctor.entity.Doctor;
 import com.patientapp.doctorservice.modules.doctor.entity.DoctorUnavailability;
 import com.patientapp.doctorservice.modules.doctor.entity.Schedule;
@@ -10,149 +11,164 @@ import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorAvai
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.DoctorUnavailabilityService;
 import com.patientapp.doctorservice.modules.doctor.service.interfaces.ScheduleService;
-import com.patientapp.doctorservice.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.time.*;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService {
+
     private final DoctorService doctorService;
     private final ScheduleService scheduleService;
     private final DoctorUnavailabilityService unavailabilityService;
-    private final JwtUtils jwtUtils;
+    private final AppointmentClient appointmentClient;
 
     /**
-     * {@inheritDoc}
+     * Contexto que encapsula toda la información necesaria para calcular
+     * la disponibilidad de un doctor en un día específico.
      */
+    private record DoctorDayContext(
+            LocalDate date,
+            ZoneId zone,
+            Doctor doctor,
+            List<Schedule> schedules,
+            List<DoctorUnavailability> unavailabilities,
+            Map<LocalDate, Long> appointmentCounts
+    ) {}
+
     @Override
-    public DoctorAvailabilityResponseDTO getByDoctorId(UUID doctorId) {
+    public DoctorMonthAvailabilityResponseDTO getByDoctorIdAndMonth(UUID doctorId, Month month) {
         Doctor doctor = doctorService.getEntityByIdOrThrow(doctorId);
         ZoneId zone = ZoneId.of(doctor.getZoneId());
+        YearMonth yearMonth = YearMonth.of(Year.now(zone).getValue(), month);
 
         List<Schedule> schedules = scheduleService.getAllEntitiesByDoctorIdOrThrow(doctorId);
         List<DoctorUnavailability> unavailabilities = unavailabilityService.getAllEntitiesByDoctorId(doctorId);
 
-        List<DayAvailabilityDTO> availability = buildWeeklyAvailability(schedules, unavailabilities, zone);
+        Map<LocalDate, Long> appointmentCounts = appointmentClient.getAppointmentCountByDoctorAndMonth(
+                doctorId,
+                yearMonth.getYear(),
+                month.getValue()
+        );
 
-        return DoctorAvailabilityResponseDTO.builder()
+        List<DoctorMonthAvailabilityResponseDTO.DayAvailability> availabilities =
+                calculateMonthlyAvailability(yearMonth, doctor, schedules, unavailabilities, appointmentCounts, zone);
+
+        return DoctorMonthAvailabilityResponseDTO.builder()
                 .doctorId(doctorId)
-                .zoneId(doctor.getZoneId())
-                .availability(availability)
+                .year(yearMonth.getYear())
+                .month(month.getValue())
+                .availability(availabilities)
                 .build();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public DoctorAvailabilityResponseDTO getMyAvailability() {
-        UUID userId = jwtUtils.getUserIdOrThrow();
-        Doctor doctor = doctorService.getEntityByUserIdOrThrow(userId);
-        return getByDoctorId(doctor.getId());
-    }
+    public DoctorDayAvailabilityResponseDTO getByDoctorIdAndDay(UUID doctorId, LocalDate date) {
+        Doctor doctor = doctorService.getEntityByIdOrThrow(doctorId);
+        ZoneId zone = ZoneId.of(doctor.getZoneId());
 
-    /**
-     * Builds the weekly availability for the doctor, subtracting absences from available intervals.
-     *
-     * @param schedules List of doctor's schedules
-     * @param unavailabilities List of doctor's absences
-     * @param zone Doctor's time zone
-     * @return List of DayAvailabilityDTO for each day
-     */
-    private List<DayAvailabilityDTO> buildWeeklyAvailability(
-            List<Schedule> schedules,
-            List<DoctorUnavailability> unavailabilities,
-            ZoneId zone
-    ) {
-        LocalDate today = LocalDate.now(zone);
-        return IntStream.range(0, 7)
-                .mapToObj(today::plusDays)
-                .map(date -> buildDayAvailability(date, schedules, unavailabilities, zone))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Builds the availability intervals for a specific day, subtracting absences from available intervals.
-     *
-     * @param date The date to build availability for
-     * @param schedules List of doctor's schedules
-     * @param unavailabilities List of doctor's absences
-     * @param zone Doctor's time zone
-     * @return DayAvailabilityDTO for the given day
-     */
-    private DayAvailabilityDTO buildDayAvailability(
-            LocalDate date,
-            List<Schedule> schedules,
-            List<DoctorUnavailability> unavailabilities,
-            ZoneId zone
-    ) {
-        // Build schedule intervals for the day
-        List<IntervalDTO> scheduleIntervals = schedules.stream()
+        List<Schedule> schedules = scheduleService.getAllEntitiesByDoctorIdOrThrow(doctorId)
+                .stream()
                 .filter(s -> s.getDayOfWeek() == date.getDayOfWeek())
-                .map(s -> new IntervalDTO(
-                            parseToInstant(s.getStartTime(), date, zone),
-                            parseToInstant(s.getEndTime(), date, zone)
-                        )
-                )
                 .toList();
 
-        // Build unavailable intervals for the day
-        // An absence overlaps with the day if it starts before the end of the day and ends after the start of the day
-        List<IntervalDTO> unavailableIntervals = unavailabilities.stream()
+        List<DoctorUnavailability> unavailabilities = unavailabilityService.getAllEntitiesByDoctorId(doctorId)
+                .stream()
                 .filter(u ->
-                        !u.getEndTime().isBefore(date.atStartOfDay(zone).toInstant())
-                        && !u.getStartTime().isAfter(date.atTime(LocalTime.MAX).atZone(zone).toInstant())
-                )
-                .map(u -> new IntervalDTO(
-                            u.getStartTime(),
-                            u.getEndTime()
-                        )
-                )
+                        !u.getEndTime().isBefore(date.atStartOfDay(zone).toInstant()) &&
+                                !u.getStartTime().isAfter(date.atTime(LocalTime.MAX).atZone(zone).toInstant())
+                ).toList();
+
+        List<Instant> bookedInstants = appointmentClient.getAppointmentsByDoctorAndDay(doctorId, date);
+
+        List<IntervalDTO> scheduleIntervals = schedules.stream()
+                .map(s -> new IntervalDTO(
+                        toInstant(s.getStartTime(), date, zone),
+                        toInstant(s.getEndTime(), date, zone)
+                ))
                 .toList();
 
-        // Subtract unavailable intervals from schedule intervals
-        List<IntervalDTO> availableIntervals = subtractUnavailableIntervals(scheduleIntervals, unavailableIntervals);
+        List<IntervalDTO> mergedUnavailable = mergeIntervals(unavailabilities, bookedInstants, doctor.getAppointmentDuration());
 
-        // Build and return the day's availability DTO
-        return DayAvailabilityDTO.builder()
-                .date(date)
-                .dayOfWeek(date.getDayOfWeek().name())
-                .intervals(availableIntervals)
-                .unavailable(unavailableIntervals)
-                .build();
+        List<IntervalDTO> availableIntervals = subtractUnavailableIntervals(
+                scheduleIntervals,
+                mergedUnavailable
+        );
+
+        return new DoctorDayAvailabilityResponseDTO(
+                doctorId,
+                date,
+                doctor.getAppointmentDuration(),
+                availableIntervals
+        );
     }
 
-    /**
-     * Subtracts unavailable intervals (absences) from available intervals (schedule).
-     * Returns the resulting available intervals after removing overlaps.
-     *
-     * @param intervals List of available intervals
-     * @param unavailable List of unavailable intervals
-     * @return List of IntervalDTO representing available intervals after subtraction
-     */
+
+    private Instant toInstant(LocalTime time, LocalDate date, ZoneId zone) {
+        return time.atDate(date).atZone(zone).toInstant();
+    }
+
+    private List<IntervalDTO> buildScheduleIntervals(List<Schedule> schedules, DoctorDayContext ctx) {
+        return schedules.stream()
+                .map(s -> new IntervalDTO(
+                        toInstant(s.getStartTime(), ctx.date(), ctx.zone()),
+                        toInstant(s.getEndTime(), ctx.date(), ctx.zone())
+                ))
+                .toList();
+    }
+
+    private List<IntervalDTO> mergeIntervals(
+            List<DoctorUnavailability> unavailabilities,
+            List<Instant> appointments,
+            int appointmentDurationMinutes
+    ) {
+        List<IntervalDTO> intervals = new ArrayList<>();
+
+        // Convertir indisponibilidades a IntervalDTO
+        intervals.addAll(
+                unavailabilities.stream()
+                        .map(u -> new IntervalDTO(u.getStartTime(), u.getEndTime()))
+                        .toList()
+        );
+
+        // Convertir citas ocupadas (Instant) a IntervalDTO según la duración de cita
+        intervals.addAll(
+                appointments.stream()
+                        .map(start -> new IntervalDTO(
+                                start,
+                                start.plus(Duration.ofMinutes(appointmentDurationMinutes))
+                        ))
+                        .toList()
+        );
+
+        return intervals;
+    }
+
+    private List<IntervalDTO> buildUnavailableIntervals(DoctorDayContext ctx) {
+        Instant dayStart = ctx.date().atStartOfDay(ctx.zone()).toInstant();
+        Instant dayEnd = ctx.date().atTime(LocalTime.MAX).atZone(ctx.zone()).toInstant();
+
+        return ctx.unavailabilities().stream()
+                .filter(u -> !u.getEndTime().isBefore(dayStart) && !u.getStartTime().isAfter(dayEnd))
+                .map(u -> new IntervalDTO(u.getStartTime(), u.getEndTime()))
+                .toList();
+    }
+
     private List<IntervalDTO> subtractUnavailableIntervals(List<IntervalDTO> intervals, List<IntervalDTO> unavailable) {
         List<IntervalDTO> result = new ArrayList<>();
+
         for (IntervalDTO interval : intervals) {
             Instant start = interval.start();
             Instant end = interval.end();
 
-            // Find all unavailable intervals that overlap with this available interval
             List<IntervalDTO> overlaps = unavailable.stream()
                     .filter(u -> u.start().isBefore(end) && u.end().isAfter(start))
+                    .sorted(Comparator.comparing(IntervalDTO::start))
                     .toList();
 
-            // If no overlaps, keep the interval as is
             if (overlaps.isEmpty()) {
                 result.add(interval);
                 continue;
@@ -160,33 +176,62 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
 
             Instant currentStart = start;
             for (IntervalDTO u : overlaps) {
-                // Add any time before the unavailable period
-                if (u.start().isAfter(currentStart)) {
-                    result.add(new IntervalDTO(currentStart, u.start()));
-                }
-                // Move the start pointer past the unavailable period
-                if (u.end().isAfter(currentStart)) {
-                    currentStart = u.end();
-                }
+                if (u.start().isAfter(currentStart)) result.add(new IntervalDTO(currentStart, u.start()));
+                if (u.end().isAfter(currentStart)) currentStart = u.end();
             }
 
-            // Add any remaining time after the last unavailable period
-            if (currentStart.isBefore(end)) {
-                result.add(new IntervalDTO(currentStart, end));
-            }
+            if (currentStart.isBefore(end)) result.add(new IntervalDTO(currentStart, end));
         }
+
         return result;
     }
 
+    private long calculateTotalCapacity(List<IntervalDTO> intervals, int appointmentMinutes) {
+        return intervals.stream()
+                .mapToLong(i -> Duration.between(i.start(), i.end()).toMinutes() / appointmentMinutes)
+                .sum();
+    }
+
     /**
-     * Parses a LocalTime and LocalDate to an Instant in the given ZoneId.
-     *
-     * @param time LocalTime to parse
-     * @param date LocalDate to parse
-     * @param zone ZoneId for the conversion
-     * @return Instant representing the date and time in the given zone
+     * Determina si un día está completamente ocupado o bloqueado.
      */
-    private Instant parseToInstant(LocalTime time, LocalDate date, ZoneId zone) {
-        return time.atDate(date).atZone(zone).toInstant();
+    private boolean isDayFullyBooked(DoctorDayContext ctx) {
+        List<Schedule> dailySchedules = ctx.schedules().stream()
+                .filter(s -> s.getDayOfWeek() == ctx.date().getDayOfWeek())
+                .toList();
+
+        if (dailySchedules.isEmpty()) return true; // no trabaja
+
+        List<IntervalDTO> scheduleIntervals = buildScheduleIntervals(dailySchedules, ctx);
+        List<IntervalDTO> unavailableIntervals = buildUnavailableIntervals(ctx);
+        List<IntervalDTO> availableIntervals = subtractUnavailableIntervals(scheduleIntervals, unavailableIntervals);
+
+        if (availableIntervals.isEmpty()) return true; // todas las horas cubiertas por ausencias
+
+        long capacity = calculateTotalCapacity(availableIntervals, ctx.doctor().getAppointmentDuration());
+        long booked = ctx.appointmentCounts().getOrDefault(ctx.date(), 0L);
+
+        return booked >= capacity;
+    }
+
+    private List<DoctorMonthAvailabilityResponseDTO.DayAvailability> calculateMonthlyAvailability(
+            YearMonth yearMonth,
+            Doctor doctor,
+            List<Schedule> schedules,
+            List<DoctorUnavailability> unavailabilities,
+            Map<LocalDate, Long> appointmentCounts,
+            ZoneId zone
+    ) {
+        List<DoctorMonthAvailabilityResponseDTO.DayAvailability> result = new ArrayList<>();
+
+        for (int day = 1; day <= yearMonth.lengthOfMonth(); day++) {
+            LocalDate date = yearMonth.atDay(day);
+            DoctorDayContext ctx = new DoctorDayContext(date, zone, doctor, schedules, unavailabilities, appointmentCounts);
+            boolean fullyBooked = isDayFullyBooked(ctx);
+            result.add(new DoctorMonthAvailabilityResponseDTO.DayAvailability(date, fullyBooked));
+        }
+
+        return result;
     }
 }
+

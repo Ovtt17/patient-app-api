@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -96,4 +98,22 @@ public class AppointmentController {
         appointmentService.cancel(appointmentId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/doctor/{doctorId}/month-summary")
+    public Map<LocalDate, Long> getAppointmentCountByDoctorAndMonth(
+            @PathVariable UUID doctorId,
+            @RequestParam int year,
+            @RequestParam int month
+    ) {
+        return appointmentService.getAppointmentCountByDoctorAndMonth(doctorId, year, month);
+    }
+
+    @GetMapping("/doctor/{doctorId}/day-appointments")
+    List<Instant> getAppointmentsByDoctorAndDay(
+            @PathVariable("doctorId") UUID doctorId,
+            @RequestParam LocalDate date
+    ) {
+        return appointmentService.getAppointmentsByDoctorAndDay(doctorId, date);
+    }
+
 }

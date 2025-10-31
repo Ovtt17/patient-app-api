@@ -13,7 +13,7 @@ public class AppointmentMapper {
         return Appointment.builder()
                 .doctorId(request.doctorId())
                 .patientId(request.patientId())
-                .appointmentDate(request.appointmentDate())
+                .appointmentStart(request.appointmentStart())
                 .reason(NullSafe.ifNotBlankOrNull(request.reason()))
                 .build();
     }
@@ -23,9 +23,9 @@ public class AppointmentMapper {
                 .id(appointment.getId())
                 .doctorId(appointment.getDoctorId())
                 .patientId(appointment.getPatientId())
-                .appointmentDate(appointment.getAppointmentDate())
-                .endTime(NullSafe.ifPresentOrNull(appointment.getEndTime()))
-                .estimatedDurationMinutes(NullSafe.ifPresentOrNull(appointment.getEstimatedDurationMinutes()))
+                .appointmentStart(appointment.getAppointmentStart())
+                .appointmentEnd(NullSafe.ifPresentOrNull(appointment.getAppointmentEnd()))
+                .plannedDurationMinutes(NullSafe.ifPresentOrNull(appointment.getPlannedDurationMinutes()))
                 .reason(NullSafe.ifNotBlankOrNull(appointment.getReason()))
                 .notes(NullSafe.ifNotBlankOrNull(appointment.getNotes()))
                 .status(appointment.getStatus())

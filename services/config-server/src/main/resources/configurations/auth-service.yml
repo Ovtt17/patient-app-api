@@ -60,6 +60,9 @@ server:
     servlet:
         context-path: ${SERVER_CONTEXT_PATH}
 application:
+    superadmin:
+        email: ${SUPERADMIN_EMAIL}
+        password: ${SUPERADMIN_PASSWORD}
     front-end:
         url: ${FRONT_END_URL}
         domain: ${FRONT_END_DOMAIN}
