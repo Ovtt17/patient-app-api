@@ -114,7 +114,7 @@ class PatientServiceImplTest {
         when(repository.findAllByActiveTrue(any(Pageable.class)))
                 .thenReturn(Page.empty());
 
-        PatientPagedResponseDTO dto = service.getAllActive(0, 10, "id", "ASC");
+        PatientPagedResponseDTO dto = service.getAllActive(0, 10, "id", "ASC", null, null, null);
         assertNull(dto);
     }
 
@@ -144,7 +144,7 @@ class PatientServiceImplTest {
 
         when(mapper.toPatientPagedResponseDTO(page)).thenReturn(pagedDTO);
 
-        PatientPagedResponseDTO result = service.getAllActive(0, 5, "userId", "ASC");
+        PatientPagedResponseDTO result = service.getAllActive(0, 5, "userId", "ASC", null, null, null);
 
         assertNotNull(result);
         assertEquals(1, result.content().size());
@@ -176,7 +176,7 @@ class PatientServiceImplTest {
                 .build();
         when(mapper.toPatientPagedResponseDTO(page)).thenReturn(pagedDTO);
 
-        PatientPagedResponseDTO result = service.getAllActive(1, 3, "birthDate", "DESC");
+        PatientPagedResponseDTO result = service.getAllActive(1, 3, "birthDate", "DESC", null, null, null);
         assertNotNull(result);
         assertEquals(1, result.page());
         assertEquals(2, result.totalPages());

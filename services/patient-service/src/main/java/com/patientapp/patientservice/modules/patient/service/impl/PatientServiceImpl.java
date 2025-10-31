@@ -6,12 +6,14 @@ import com.patientapp.patientservice.modules.patient.dto.*;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
 import com.patientapp.patientservice.modules.patient.mapper.PatientMapper;
 import com.patientapp.patientservice.modules.patient.repository.PatientRepository;
+import com.patientapp.patientservice.modules.patient.repository.PatientSpecification;
 import com.patientapp.patientservice.modules.patient.service.interfaces.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,14 +46,19 @@ public class PatientServiceImpl implements PatientService {
             int page,
             int size,
             String sortBy,
-            String sortOrder
+            String sortOrder,
+            String name,
+            String email,
+            String phone
     ) {
         Sort sort = sortOrder.equalsIgnoreCase("DESC")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Patient> patients = repository.findAllByActiveTrue(pageable);
+        Specification<Patient> specification = PatientSpecification.filter(name, email, phone);
+
+        Page<Patient> patients = repository.findAll(specification, pageable);
         if (patients.isEmpty()) {
             return null;
         }

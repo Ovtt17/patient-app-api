@@ -37,9 +37,12 @@ public class PatientController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdDate") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortOrder
+            @RequestParam(defaultValue = "DESC") String sortOrder,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phone
     ) {
-        var patients = patientService.getAllActive(page, size, sortBy, sortOrder);
+        var patients = patientService.getAllActive(page, size, sortBy, sortOrder, name, email, phone);
         if (patients == null) {
             return ResponseEntity.noContent().build();
         }
