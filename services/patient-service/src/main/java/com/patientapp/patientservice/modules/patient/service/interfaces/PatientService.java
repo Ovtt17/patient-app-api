@@ -24,13 +24,19 @@ public interface PatientService {
      * @param size      number of records per page
      * @param sortBy    field name to sort by
      * @param sortOrder sort direction ("asc" or "desc")
+     * @param name      filter by patient name (optional)
+     * @param email     filter by patient email (optional)
+     * @param phone     filter by patient phone (optional)
      * @return {@link PatientPagedResponseDTO} containing the requested page of active content
      */
     PatientPagedResponseDTO getAllActive(
             int page,
             int size,
             String sortBy,
-            String sortOrder
+            String sortOrder,
+            String name,
+            String email,
+            String phone
     );
 
     /**
