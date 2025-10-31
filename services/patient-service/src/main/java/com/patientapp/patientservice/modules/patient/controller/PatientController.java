@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -90,6 +91,12 @@ public class PatientController {
     ) {
         patientService.deactivate(id);
         return ResponseEntity.ok("Paciente desactivado correctamente");
+    }
+
+    @Operation(summary = "Obtener pacientes por una lista de IDs")
+    @PostMapping("/by-ids")
+    public ResponseEntity<List<PatientResponseDTO>> getByIds(@RequestBody List<UUID> ids) {
+        return ResponseEntity.ok(patientService.getByIds(ids));
     }
 
 }

@@ -3,6 +3,7 @@ package com.patientapp.patientservice.modules.patient.service.interfaces;
 import com.patientapp.patientservice.modules.patient.dto.*;
 import com.patientapp.patientservice.modules.patient.entity.Patient;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -81,4 +82,11 @@ public interface PatientService {
      * @return Patient entity.
      */
     Patient getEntityByUserIdOrThrow(UUID userId);
+
+    /**
+     * Retrieves a list of patients by their IDs.
+     * @param ids List of UUIDs of the patients.
+     * @return List of PatientResponseDTOs of the found patients.
+     */
+    List<PatientResponseDTO> getByIds(List<UUID> ids);
 }
