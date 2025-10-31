@@ -159,6 +159,16 @@ public class DoctorServiceImpl implements DoctorService {
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor no encontrado para el usuario dado."));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<DoctorResponseDTO> getByIds(List<UUID> ids) {
+        return doctorRepository.findAllById(ids).stream()
+                .map(doctorMapper::toDoctorResponse)
+                .toList();
+    }
+
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {
         if (specialtyIds == null || specialtyIds.isEmpty()) return new HashSet<>();
         return fetchSpecialties(specialtyIds);

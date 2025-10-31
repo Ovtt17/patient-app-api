@@ -103,4 +103,12 @@ public interface DoctorService {
      * @throws DoctorNotFoundException if no doctor is associated with the given userId
      */
     Doctor getEntityByUserIdOrThrow(UUID userId);
+
+    /**
+     * Retrieves a list of doctors by their IDs.
+     *
+     * @param ids List of UUIDs of the doctors
+     * @return List of DoctorResponseDTOs of the found doctors
+     */
+    List<DoctorResponseDTO> getByIds(List<UUID> ids);
 }
