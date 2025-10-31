@@ -16,6 +16,7 @@ import com.patientapp.authservice.modules.notification.TemporaryPasswordRequest;
 import com.patientapp.authservice.modules.notification.UserCreatedRequest;
 import com.patientapp.authservice.modules.patient.client.PatientClient;
 import com.patientapp.authservice.modules.patient.dto.PatientRequestDTO;
+import com.patientapp.authservice.modules.role.entity.Role;
 import com.patientapp.authservice.modules.role.enums.Roles;
 import com.patientapp.authservice.modules.role.service.interfaces.RoleService;
 import com.patientapp.authservice.modules.token.entity.Token;
@@ -287,7 +288,7 @@ public class AuthServiceImpl implements AuthService {
 
         String email = jwtService.extractUsername(accessToken);
         User user = userService.findByEmailOrThrow(email);
-        return userMapper.toUserResponseDTO(user);
+        return buildUserResponse(user);
     }
 
     @Override
@@ -415,6 +416,41 @@ public class AuthServiceImpl implements AuthService {
         if (userService.existsByPhone(phone)) {
             throw new IllegalArgumentException("El número de teléfono ya está en uso. Intente con otro.");
         }
+    }
+
+    public Role extractUserRole(User user) {
+        return user.getRoles().stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("El usuario no tiene un rol asignado."));
+    }
+
+    public UUID getPatientIdByUserId(UUID userId) {
+        return patientClient.getByUserId(userId).id();
+    }
+
+    public UUID getDoctorIdByUserId(UUID userId) {
+        return doctorClient.getByUserId(userId).id();
+    }
+
+    private UserResponseDTO buildUserResponse(User user) {
+        // Obtener rol principal
+        Role role = extractUserRole(user);
+
+        // Inicializar IDs nulos
+        UUID patientId = null;
+        UUID doctorId = null;
+
+        final String patientRole = Roles.PACIENTE.name();
+        final String doctorRole = Roles.DOCTOR.name();
+
+        String roleName = role.getName();
+        if (roleName.equals(patientRole)) {
+            patientId = getPatientIdByUserId(user.getId());
+        } else if (roleName.equals(doctorRole)) {
+            doctorId = getDoctorIdByUserId(user.getId());
+        }
+
+        // Mapear a DTO pasando rol y IDs
+        return userMapper.toUserResponseDTO(user, patientId, doctorId);
     }
 
 }

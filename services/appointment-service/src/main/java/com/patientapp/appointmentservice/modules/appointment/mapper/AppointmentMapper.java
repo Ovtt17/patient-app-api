@@ -4,6 +4,8 @@ import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentRequ
 import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentResponseDTO;
 import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.common.utils.NullSafe;
+import com.patientapp.appointmentservice.modules.doctor.dto.DoctorResponse;
+import com.patientapp.appointmentservice.modules.patient.dto.PatientResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,11 +20,17 @@ public class AppointmentMapper {
                 .build();
     }
 
-    public AppointmentResponseDTO toResponse(Appointment appointment) {
+    public AppointmentResponseDTO toResponse(
+            Appointment appointment,
+            DoctorResponse doctor,
+            PatientResponse patient
+    ) {
         return AppointmentResponseDTO.builder()
                 .id(appointment.getId())
                 .doctorId(appointment.getDoctorId())
+                .doctorName(doctor.firstName() + " " + doctor.lastName())
                 .patientId(appointment.getPatientId())
+                .patientName(patient.firstName() + " " + patient.lastName())
                 .appointmentStart(appointment.getAppointmentStart())
                 .appointmentEnd(NullSafe.ifPresentOrNull(appointment.getAppointmentEnd()))
                 .plannedDurationMinutes(NullSafe.ifPresentOrNull(appointment.getPlannedDurationMinutes()))

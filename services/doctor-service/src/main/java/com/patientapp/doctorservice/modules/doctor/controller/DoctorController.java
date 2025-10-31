@@ -104,4 +104,9 @@ public class DoctorController {
         doctorService.deactivate(id);
         return ResponseEntity.ok("Doctor desactivado correctamente");
     }
+
+    @PostMapping("/by-ids")
+    ResponseEntity<List<DoctorResponseDTO>> getByIds(@RequestBody List<UUID> ids) {
+        return ResponseEntity.ok(doctorService.getByIds(ids));
+    }
 }

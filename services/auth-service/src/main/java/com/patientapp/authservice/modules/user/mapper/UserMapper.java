@@ -6,15 +6,11 @@ import com.patientapp.authservice.modules.user.dto.UserResponseDTO;
 import com.patientapp.authservice.modules.user.entity.User;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class UserMapper {
-
-    /**
-     * Maps User entity to UserResponseDTO.
-     * @param user the User entity to be mapped
-     * @return the mapped UserResponseDTO
-     */
-    public UserResponseDTO toUserResponseDTO(User user) {
+    private UserResponseDTO.UserResponseDTOBuilder baseBuilder(User user) {
         return UserResponseDTO.builder()
                 .id(NullSafe.ifPresentOrNull(user.getId()))
                 .firstName(NullSafe.ifNotBlankOrNull(user.getFirstName()))
@@ -28,7 +24,17 @@ public class UserMapper {
                 .roles(user.getRoles().stream()
                         .map(Role::getName)
                         .toList())
-                .mustChangePassword(user.isMustChangePassword())
+                .mustChangePassword(user.isMustChangePassword());
+    }
+
+    public UserResponseDTO toUserResponseDTO(User user) {
+        return baseBuilder(user).build();
+    }
+
+    public UserResponseDTO toUserResponseDTO(User user, UUID patientId, UUID doctorId) {
+        return baseBuilder(user)
+                .patientId(patientId)
+                .doctorId(doctorId)
                 .build();
     }
 }

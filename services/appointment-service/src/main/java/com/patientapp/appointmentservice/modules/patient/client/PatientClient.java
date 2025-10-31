@@ -6,7 +6,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.UUID;
 
 @FeignClient(
@@ -23,4 +26,7 @@ public interface PatientClient {
     PatientResponse getByUserId(
             @Parameter(description = "UUID del usuario") @PathVariable UUID userId
     );
+
+    @PostMapping("/by-ids")
+    List<PatientResponse> getByIds(@RequestBody List<UUID> ids);
 }

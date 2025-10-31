@@ -143,4 +143,14 @@ public class PatientServiceImpl implements PatientService {
         return repository.findByUserIdAndActiveTrue(userId)
                 .orElseThrow(() -> new PatientNotFoundException("Paciente no encontrado para el usuario dado."));
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<PatientResponseDTO> getByIds(List<UUID> ids) {
+        return repository.findAllById(ids).stream()
+                .map(mapper::toPatientResponse)
+                .toList();
+    }
 }
