@@ -78,6 +78,11 @@ spring:
                             uri: lb://APPOINTMENT-SERVICE
                             predicates:
                                 - Path=/api/v1/dashboard/**
+
+                        -   id: medical-record-service
+                            uri: lb://MEDICAL-RECORD-SERVICE
+                            predicates:
+                                - Path=/api/v1/medical-records/**
 server:
     port: ${GATEWAY_SERVER_PORT}
 
