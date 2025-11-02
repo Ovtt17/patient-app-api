@@ -129,4 +129,16 @@ public interface AppointmentService {
     List<DoctorSummary> findTopActiveDoctors();
 
     List<Integer> getMonthlyAppointments();
+
+    Long countPatientsByAppointmentsWithDoctor(UUID doctorId);
+
+    Long countAppointmentsByDoctorByCurrentMonth(UUID doctorId);
+
+    Long countCompletedAppointmentsByDoctorAndDateRange(UUID doctorId);
+
+    Long countCancelledAppointmentsByDoctorAndDateRange(UUID doctorId);
+
+    List<Integer> getMonthlyAppointmentsByDoctor(UUID doctorId);
+
+    List<AppointmentSummary> findRecentAppointmentsByDoctor(UUID doctorId);
 }

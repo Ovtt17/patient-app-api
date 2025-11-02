@@ -306,21 +306,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 getEndOfCurrentMonthInstant()
         );
 
-        if (appointments.isEmpty()) return List.of();
-
-        return appointments.stream()
-                .map(appointment -> {
-                    DoctorResponse doctor = doctorClient.getById(appointment.getDoctorId());
-                    PatientResponse patient = patientClient.getById(appointment.getPatientId());
-                    return AppointmentSummary.builder()
-                            .id(appointment.getId())
-                            .date(appointment.getAppointmentStart().toString())
-                            .doctorName(doctor.firstName() + " " + doctor.lastName())
-                            .patientName(patient.firstName() + " " + patient.lastName())
-                            .status(appointment.getStatus())
-                            .build();
-                })
-                .toList();
+        return getAppointmentSummaries(appointments);
     }
 
     @Override
@@ -364,6 +350,92 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         return monthlyAppointments;
+    }
+
+    @Override
+    public Long countPatientsByAppointmentsWithDoctor(UUID doctorId) {
+        return repository.countDistinctPatientsByDoctorId(doctorId);
+    }
+
+    @Override
+    public Long countAppointmentsByDoctorByCurrentMonth(UUID doctorId) {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return Long.valueOf(repository.countAppointmentsByDoctorAndDateRange(doctorId, start, end));
+    }
+
+    @Override
+    public Long countCompletedAppointmentsByDoctorAndDateRange(UUID doctorId) {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return repository.countCompletedAppointmentsByDoctorAndDateRange(doctorId, start, end);
+    }
+
+    @Override
+    public Long countCancelledAppointmentsByDoctorAndDateRange(UUID doctorId) {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return repository.countCancelledAppointmentsByDoctorAndDateRange(doctorId, start, end);
+    }
+
+    @Override
+    public List<Integer> getMonthlyAppointmentsByDoctor(UUID doctorId) {
+        List<Integer> monthlyAppointments = new ArrayList<>();
+
+        ZoneId zone = ZoneId.of("America/Managua");
+        YearMonth currentMonth = YearMonth.now(zone);
+        int currentYear = currentMonth.getYear();
+        int lastMonth = currentMonth.getMonthValue();
+
+        for (int month = 1; month <= lastMonth; month++) {
+            YearMonth yearMonth = YearMonth.of(currentYear, month);
+
+            ZonedDateTime startZoned = yearMonth.atDay(1).atStartOfDay(zone);
+            ZonedDateTime endZoned = yearMonth.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone);
+
+            Instant startUtc = startZoned.withZoneSameInstant(ZoneOffset.UTC).toInstant();
+            Instant endUtc = endZoned.withZoneSameInstant(ZoneOffset.UTC).toInstant();
+
+            int count = repository.countAppointmentsByDoctorAndDateRange(doctorId, startUtc, endUtc);
+            monthlyAppointments.add(count);
+        }
+
+        return monthlyAppointments;
+    }
+
+    @Override
+    public List<AppointmentSummary> findRecentAppointmentsByDoctor(UUID doctorId) {
+        List<Appointment> appointments = repository.findRecentAppointmentsByDoctor(
+                doctorId,
+                getStartOfCurrentMonthInstant(),
+                getEndOfCurrentMonthInstant()
+        );
+
+        return getAppointmentSummaries(appointments);
+    }
+
+    private List<AppointmentSummary> getAppointmentSummaries(List<Appointment> appointments) {
+        if (appointments.isEmpty()) return List.of();
+
+
+        DoctorResponse doctor = doctorClient.getById(appointments.stream()
+                .map(Appointment::getDoctorId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No se encontró el doctor para las citas dadas"))
+        );
+
+        return appointments.stream()
+                .map(appointment -> {
+                    PatientResponse patient = patientClient.getById(appointment.getPatientId());
+                    return AppointmentSummary.builder()
+                            .id(appointment.getId())
+                            .date(appointment.getAppointmentStart().toString())
+                            .doctorName(doctor.firstName() + " " + doctor.lastName())
+                            .patientName(patient.firstName() + " " + patient.lastName())
+                            .status(appointment.getStatus())
+                            .build();
+                })
+                .toList();
     }
 
     private Instant getStartOfCurrentMonthInstant() {
