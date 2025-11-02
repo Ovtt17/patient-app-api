@@ -10,7 +10,10 @@ import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentSt
 import com.patientapp.appointmentservice.modules.appointment.mapper.AppointmentMapper;
 import com.patientapp.appointmentservice.modules.appointment.repository.AppointmentRepository;
 import com.patientapp.appointmentservice.modules.appointment.repository.AppointmentSpecifications;
+import com.patientapp.appointmentservice.modules.appointment.repository.DoctorAppointmentCount;
 import com.patientapp.appointmentservice.modules.appointment.service.interfaces.AppointmentService;
+import com.patientapp.appointmentservice.modules.dashboard.dto.AppointmentSummary;
+import com.patientapp.appointmentservice.modules.dashboard.dto.DoctorSummary;
 import com.patientapp.appointmentservice.modules.doctor.client.DoctorClient;
 import com.patientapp.appointmentservice.modules.doctor.dto.DoctorResponse;
 import com.patientapp.appointmentservice.modules.notification.AppointmentCreatedRequest;
@@ -18,11 +21,13 @@ import com.patientapp.appointmentservice.modules.notification.NotificationProduc
 import com.patientapp.appointmentservice.modules.patient.client.PatientClient;
 import com.patientapp.appointmentservice.modules.patient.dto.PatientResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -221,6 +226,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         repository.save(appointment);
     }
 
+    /***
+     * {@inheritDoc}
+     */
     @Override
     public Map<LocalDate, Long> getAppointmentCountByDoctorAndMonth(UUID doctorId, int year, int month) {
         YearMonth ym = YearMonth.of(year, month);
@@ -239,6 +247,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .collect(Collectors.toMap(AppointmentDayCountDTO::getDate, AppointmentDayCountDTO::getCount));
     }
 
+    /***
+     * {@inheritDoc}
+     */
     @Override
     public List<Instant> getAppointmentsByDoctorAndDay(UUID doctorId, LocalDate date) {
         Instant dayStart = date.atStartOfDay(ZONE).toInstant();
@@ -247,4 +258,200 @@ public class AppointmentServiceImpl implements AppointmentService {
         return repository.findAppointmentsByDoctorAndDay(doctorId, dayStart, dayEnd);
     }
 
+    /***
+     * {@inheritDoc}
+     */
+    @Override
+    public Long countAllByCurrentMonth() {
+        LocalDate now = LocalDate.now();
+        ZoneId zone = ZoneId.systemDefault();
+        Instant start = now.withDayOfMonth(1)
+                .atStartOfDay(zone)
+                .toInstant();
+        Instant end = now.withDayOfMonth(now.lengthOfMonth())
+                .plusDays(1)
+                .atStartOfDay(zone)
+                .toInstant();
+
+        return repository.countByAppointmentStartBetween(start, end);
+    }
+
+    /***
+     * {@inheritDoc}
+     */
+    @Override
+    public Long countAllByCurrentMonthAndCompleted() {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return repository.countByAppointmentStartBetweenAndStatus(start, end, AppointmentStatus.COMPLETADA);
+    }
+
+    /***
+     * {@inheritDoc}
+     */
+    @Override
+    public Long countAllByCurrentMonthAndCancelled() {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return repository.countByAppointmentStartBetweenAndStatus(start, end, AppointmentStatus.CANCELADA);
+    }
+
+    /***
+     * {@inheritDoc}
+     */
+    @Override
+    public List<AppointmentSummary> findRecentAppointments() {
+        List<Appointment> appointments = repository.findRecentAppointments(
+                getStartOfCurrentMonthInstant(),
+                getEndOfCurrentMonthInstant()
+        );
+
+        return getAppointmentSummaries(appointments);
+    }
+
+    @Override
+    public List<DoctorSummary> findTopActiveDoctors() {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        List<DoctorAppointmentCount> top10AppointmentsByDoctor = repository.findTopDoctors(start, end, PageRequest.of(0, 10));
+
+        return top10AppointmentsByDoctor.stream()
+                .map(a -> {
+                    DoctorResponse doctor = doctorClient.getById(a.getDoctorId());
+                    return DoctorSummary.builder()
+                            .id(doctor.id())
+                            .fullName(doctor.firstName() + " " + doctor.lastName())
+                            .appointmentsCount(a.getCount())
+                            .build();
+                })
+                .toList();
+    }
+
+    @Override
+    public List<Integer> getMonthlyAppointments() {
+        List<Integer> monthlyAppointments = new ArrayList<>();
+
+        ZoneId zone = ZoneId.of("America/Managua");
+        YearMonth currentMonth = YearMonth.now(zone);
+        int currentYear = currentMonth.getYear();
+        int lastMonth = currentMonth.getMonthValue();
+
+        for (int month = 1; month <= lastMonth; month++) {
+            YearMonth yearMonth = YearMonth.of(currentYear, month);
+
+            ZonedDateTime startZoned = yearMonth.atDay(1).atStartOfDay(zone);
+            ZonedDateTime endZoned = yearMonth.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone);
+
+            Instant startUtc = startZoned.withZoneSameInstant(ZoneOffset.UTC).toInstant();
+            Instant endUtc = endZoned.withZoneSameInstant(ZoneOffset.UTC).toInstant();
+
+            int count = repository.countAppointmentsByDateRange(startUtc, endUtc);
+            monthlyAppointments.add(count);
+        }
+
+        return monthlyAppointments;
+    }
+
+    @Override
+    public Long countPatientsByAppointmentsWithDoctor(UUID doctorId) {
+        return repository.countDistinctPatientsByDoctorId(doctorId);
+    }
+
+    @Override
+    public Long countAppointmentsByDoctorByCurrentMonth(UUID doctorId) {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return Long.valueOf(repository.countAppointmentsByDoctorAndDateRange(doctorId, start, end));
+    }
+
+    @Override
+    public Long countCompletedAppointmentsByDoctorAndDateRange(UUID doctorId) {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return repository.countCompletedAppointmentsByDoctorAndDateRange(doctorId, start, end);
+    }
+
+    @Override
+    public Long countCancelledAppointmentsByDoctorAndDateRange(UUID doctorId) {
+        Instant start = getStartOfCurrentMonthInstant();
+        Instant end = getEndOfCurrentMonthInstant();
+        return repository.countCancelledAppointmentsByDoctorAndDateRange(doctorId, start, end);
+    }
+
+    @Override
+    public List<Integer> getMonthlyAppointmentsByDoctor(UUID doctorId) {
+        List<Integer> monthlyAppointments = new ArrayList<>();
+
+        ZoneId zone = ZoneId.of("America/Managua");
+        YearMonth currentMonth = YearMonth.now(zone);
+        int currentYear = currentMonth.getYear();
+        int lastMonth = currentMonth.getMonthValue();
+
+        for (int month = 1; month <= lastMonth; month++) {
+            YearMonth yearMonth = YearMonth.of(currentYear, month);
+
+            ZonedDateTime startZoned = yearMonth.atDay(1).atStartOfDay(zone);
+            ZonedDateTime endZoned = yearMonth.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone);
+
+            Instant startUtc = startZoned.withZoneSameInstant(ZoneOffset.UTC).toInstant();
+            Instant endUtc = endZoned.withZoneSameInstant(ZoneOffset.UTC).toInstant();
+
+            int count = repository.countAppointmentsByDoctorAndDateRange(doctorId, startUtc, endUtc);
+            monthlyAppointments.add(count);
+        }
+
+        return monthlyAppointments;
+    }
+
+    @Override
+    public List<AppointmentSummary> findRecentAppointmentsByDoctor(UUID doctorId) {
+        List<Appointment> appointments = repository.findRecentAppointmentsByDoctor(
+                doctorId,
+                getStartOfCurrentMonthInstant(),
+                getEndOfCurrentMonthInstant()
+        );
+
+        return getAppointmentSummaries(appointments);
+    }
+
+    private List<AppointmentSummary> getAppointmentSummaries(List<Appointment> appointments) {
+        if (appointments.isEmpty()) return List.of();
+
+
+        DoctorResponse doctor = doctorClient.getById(appointments.stream()
+                .map(Appointment::getDoctorId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No se encontró el doctor para las citas dadas"))
+        );
+
+        return appointments.stream()
+                .map(appointment -> {
+                    PatientResponse patient = patientClient.getById(appointment.getPatientId());
+                    return AppointmentSummary.builder()
+                            .id(appointment.getId())
+                            .date(appointment.getAppointmentStart().toString())
+                            .doctorName(doctor.firstName() + " " + doctor.lastName())
+                            .patientName(patient.firstName() + " " + patient.lastName())
+                            .status(appointment.getStatus())
+                            .build();
+                })
+                .toList();
+    }
+
+    private Instant getStartOfCurrentMonthInstant() {
+        LocalDate now = LocalDate.now();
+        ZoneId zone = ZoneId.systemDefault();
+        return now.withDayOfMonth(1)
+                .atStartOfDay(zone)
+                .toInstant();
+    }
+
+    private Instant getEndOfCurrentMonthInstant() {
+        LocalDate now = LocalDate.now();
+        ZoneId zone = ZoneId.systemDefault();
+        return now.withDayOfMonth(now.lengthOfMonth())
+                .plusDays(1)
+                .atStartOfDay(zone)
+                .toInstant();
+    }
 }

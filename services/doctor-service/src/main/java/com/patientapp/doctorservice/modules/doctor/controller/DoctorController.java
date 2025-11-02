@@ -109,4 +109,9 @@ public class DoctorController {
     ResponseEntity<List<DoctorResponseDTO>> getByIds(@RequestBody List<UUID> ids) {
         return ResponseEntity.ok(doctorService.getByIds(ids));
     }
+
+    @GetMapping("/count-all")
+    public ResponseEntity<Long> countAll() {
+        return ResponseEntity.ok(doctorService.countAll());
+    }
 }

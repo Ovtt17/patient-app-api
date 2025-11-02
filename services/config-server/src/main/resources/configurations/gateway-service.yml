@@ -73,6 +73,11 @@ spring:
                             uri: lb://APPOINTMENT-SERVICE
                             predicates:
                                 - Path=/api/v1/appointments/**
+
+                        -   id: appointment-service-dashboard
+                            uri: lb://APPOINTMENT-SERVICE
+                            predicates:
+                                - Path=/api/v1/dashboard/**
 server:
     port: ${GATEWAY_SERVER_PORT}
 

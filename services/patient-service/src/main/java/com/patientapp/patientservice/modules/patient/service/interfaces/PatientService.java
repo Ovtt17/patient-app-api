@@ -95,4 +95,7 @@ public interface PatientService {
      * @return List of PatientResponseDTOs of the found patients.
      */
     List<PatientResponseDTO> getByIds(List<UUID> ids);
+
+
+    Long countAll();
 }

@@ -160,4 +160,9 @@ public class PatientServiceImpl implements PatientService {
                 .map(mapper::toPatientResponse)
                 .toList();
     }
+
+    @Override
+    public Long countAll() {
+        return repository.count();
+    }
 }
