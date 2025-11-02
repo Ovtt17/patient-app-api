@@ -102,4 +102,8 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getByIds(ids));
     }
 
+    @GetMapping("/count-all")
+    public ResponseEntity<Long> countAll() {
+        return ResponseEntity.ok(patientService.countAll());
+    }
 }
