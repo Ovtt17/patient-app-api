@@ -1,6 +1,7 @@
 package com.patientapp.doctorservice.modules.specialty.service;
 
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
+import com.patientapp.doctorservice.modules.doctor.dto.SpecialtyDistribution;
 import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyRequestDTO;
 import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyResponseDTO;
 import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
@@ -94,5 +95,12 @@ public class SpecialtyServiceImpl implements SpecialtyService {
     @Override
     public List<Specialty> findByIdIn(List<Integer> specialtyIds) {
         return repository.findByIdIn(specialtyIds);
+    }
+
+    @Override
+    public List<SpecialtyDistribution> countBySpecialty() {
+        List<SpecialtyDistribution> distributions = repository.countDoctorsBySpecialty();
+        if (distributions.isEmpty()) return List.of();
+        return distributions;
     }
 }

@@ -111,4 +111,6 @@ public interface DoctorService {
      * @return List of DoctorResponseDTOs of the found doctors
      */
     List<DoctorResponseDTO> getByIds(List<UUID> ids);
+
+    Long countAll();
 }

@@ -1,5 +1,6 @@
 package com.patientapp.doctorservice.modules.specialty.controller;
 
+import com.patientapp.doctorservice.modules.doctor.dto.SpecialtyDistribution;
 import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyRequestDTO;
 import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyResponseDTO;
 import com.patientapp.doctorservice.modules.specialty.service.SpecialtyService;
@@ -70,5 +71,12 @@ public class SpecialtyController {
     ) {
         String message = specialtyService.delete(id);
         return ResponseEntity.ok(message);
+    }
+
+
+    @GetMapping("/count-by-specialty")
+    @Operation(summary = "Contar doctores por especialidad", description = "Obtiene el conteo de doctores agrupados por especialidad.")
+    public ResponseEntity<List<SpecialtyDistribution>> countBySpecialty() {
+        return ResponseEntity.ok(specialtyService.countBySpecialty());
     }
 }

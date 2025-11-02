@@ -1,6 +1,7 @@
 package com.patientapp.doctorservice.modules.specialty.service;
 
 import com.patientapp.doctorservice.common.handler.exceptions.SpecialtyNotFoundException;
+import com.patientapp.doctorservice.modules.doctor.dto.SpecialtyDistribution;
 import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyRequestDTO;
 import com.patientapp.doctorservice.modules.specialty.dto.SpecialtyResponseDTO;
 import com.patientapp.doctorservice.modules.specialty.entity.Specialty;
@@ -78,4 +79,6 @@ public interface SpecialtyService {
      * @return List of Specialty entities matching the IDs
      */
     List<Specialty> findByIdIn(List<Integer> specialtyIds);
+
+    List<SpecialtyDistribution> countBySpecialty();
 }

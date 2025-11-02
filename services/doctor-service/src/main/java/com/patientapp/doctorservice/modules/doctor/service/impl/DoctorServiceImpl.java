@@ -169,6 +169,11 @@ public class DoctorServiceImpl implements DoctorService {
                 .toList();
     }
 
+    @Override
+    public Long countAll() {
+        return doctorRepository.count();
+    }
+
     private Set<Specialty> getValidatedSpecialties(Set<Integer> specialtyIds) {
         if (specialtyIds == null || specialtyIds.isEmpty()) return new HashSet<>();
         return fetchSpecialties(specialtyIds);
