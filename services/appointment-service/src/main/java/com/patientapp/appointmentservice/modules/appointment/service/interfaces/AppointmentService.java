@@ -5,6 +5,8 @@ import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentRequ
 import com.patientapp.appointmentservice.modules.appointment.dto.AppointmentResponseDTO;
 import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentStatus;
+import com.patientapp.appointmentservice.modules.dashboard.dto.AppointmentSummary;
+import com.patientapp.appointmentservice.modules.dashboard.dto.DoctorSummary;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -96,4 +98,35 @@ public interface AppointmentService {
 
     List<Instant> getAppointmentsByDoctorAndDay(UUID doctorId, LocalDate date);
 
+    /**
+     * Counts the total number of appointments.
+     *
+     * @return total count of appointments
+     */
+    Long countAllByCurrentMonth();
+
+    /**
+     * Counts the total number of completed appointments in the current month.
+     *
+     * @return count of completed appointments
+     */
+    Long countAllByCurrentMonthAndCompleted();
+
+    /**
+     * Counts the total number of cancelled appointments in the current month.
+     *
+     * @return count of cancelled appointments
+     */
+    Long countAllByCurrentMonthAndCancelled();
+
+    /**
+     * Retrieves a list of recent appointment summaries.
+     *
+     * @return List of {@link AppointmentSummary} for recent appointments
+     */
+    List<AppointmentSummary> findRecentAppointments();
+
+    List<DoctorSummary> findTopActiveDoctors();
+
+    List<Integer> getMonthlyAppointments();
 }

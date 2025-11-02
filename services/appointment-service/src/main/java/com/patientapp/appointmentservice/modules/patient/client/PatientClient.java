@@ -29,4 +29,7 @@ public interface PatientClient {
 
     @PostMapping("/by-ids")
     List<PatientResponse> getByIds(@RequestBody List<UUID> ids);
+
+    @GetMapping("/count-all")
+    Long countAll();
 }

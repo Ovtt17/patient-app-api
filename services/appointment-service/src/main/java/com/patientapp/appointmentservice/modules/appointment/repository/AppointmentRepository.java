@@ -2,6 +2,7 @@ package com.patientapp.appointmentservice.modules.appointment.repository;
 
 import com.patientapp.appointmentservice.modules.appointment.entity.Appointment;
 import com.patientapp.appointmentservice.modules.appointment.enums.AppointmentStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -56,5 +57,35 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
             @Param("doctorId") UUID doctorId,
             @Param("dayStart") Instant dayStart,
             @Param("dayEnd") Instant dayEnd
+    );
+
+    long countByAppointmentStartBetween(Instant start, Instant end);
+
+    long countByAppointmentStartBetweenAndStatus(Instant start, Instant end, AppointmentStatus appointmentStatus);
+
+    @Query("""
+        SELECT a FROM Appointment a
+        WHERE a.appointmentStart BETWEEN :start AND :end
+        ORDER BY a.appointmentStart DESC
+    """)
+    List<Appointment> findRecentAppointments(@Param("start") Instant start, @Param("end") Instant end);
+
+    @Query("""
+        SELECT a.doctorId AS doctorId, COUNT(a) AS count
+        FROM Appointment a
+        WHERE a.appointmentStart BETWEEN :start AND :end
+        GROUP BY a.doctorId
+        ORDER BY COUNT(a) DESC
+    """)
+    List<DoctorAppointmentCount> findTopDoctors(@Param("start") Instant start, @Param("end") Instant end, Pageable pageable);
+
+    @Query("""
+        SELECT COUNT(a)
+        FROM Appointment a
+        WHERE a.appointmentStart BETWEEN :startDate AND :endDate
+    """)
+    Integer countAppointmentsByDateRange(
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate
     );
 }
