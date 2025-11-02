@@ -1,5 +1,6 @@
 package com.patientapp.appointmentservice.modules.dashboard.controller;
 
+import com.patientapp.appointmentservice.modules.dashboard.dto.AdminDashboardResponse;
 import com.patientapp.appointmentservice.modules.dashboard.service.interfaces.DashboardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class DashboardController {
 
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getAdminDashboard() {
+    public ResponseEntity<AdminDashboardResponse> getAdminDashboard() {
         return ResponseEntity.ok(dashboardService.getAdminDashboard());
     }
 }
