@@ -9,6 +9,7 @@ public enum EmailTemplates {
     TEMP_PASSWORD("temporary-password.html", "Contraseña temporal"),
     APPOINTMENT_CREATED_PATIENT("appointment-created-patient.html", "Cita agendada - Confirmación para paciente"),
     APPOINTMENT_CREATED_DOCTOR("appointment-created-doctor.html", "Nueva cita - Notificación para doctor"),
+    MEDICAL_RECORD_CREATED("medical-record-created.html", "Nuevo registro médico disponible")
     ;
 
     @Getter

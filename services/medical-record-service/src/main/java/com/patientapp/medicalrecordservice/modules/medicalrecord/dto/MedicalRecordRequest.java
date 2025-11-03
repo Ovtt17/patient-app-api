@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record MedicalRecordRequest(
         UUID patientId,
+        UUID doctorId,
         Long appointmentId,
         Double weight,
         Double height,

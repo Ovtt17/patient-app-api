@@ -18,6 +18,13 @@ spring:
         user: ${MEDICAL_RECORD_DB_USERNAME}
         password: ${MEDICAL_RECORD_DB_PASSWORD}
         baseline-version: ${FLYWAY_BASELINE_VERSION}
+    kafka:
+        producer:
+            bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+            properties:
+                spring.json.type.mapping: medicalRecordCreated:com.patientapp.medicalrecordservice.modules.notification.MedicalRecordCreatedRequest
 server:
     port: ${MEDICAL_RECORD_SERVER_PORT}
     servlet:
@@ -30,3 +37,5 @@ application:
     config:
         auth-url: ${AUTH_SERVICE_URL}
         appointment-url: ${APPOINTMENT_SERVICE_URL}
+        patient-url: ${PATIENT_SERVICE_URL}
+        doctor-url: ${DOCTOR_SERVICE_URL}

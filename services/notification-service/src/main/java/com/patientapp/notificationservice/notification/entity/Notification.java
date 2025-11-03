@@ -3,6 +3,7 @@ package com.patientapp.notificationservice.notification.entity;
 import com.patientapp.notificationservice.kafka.consumer.appointment.AppointmentCreatedEvent;
 import com.patientapp.notificationservice.kafka.consumer.auth.TemporaryPasswordEvent;
 import com.patientapp.notificationservice.kafka.consumer.auth.UserCreatedEvent;
+import com.patientapp.notificationservice.kafka.consumer.medicalrecord.MedicalRecordCreatedEvent;
 import com.patientapp.notificationservice.notification.enums.NotificationType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -25,4 +26,5 @@ public class Notification {
     private UserCreatedEvent userCreatedEvent;
     private TemporaryPasswordEvent temporaryPasswordEvent;
     private AppointmentCreatedEvent appointmentCreatedEvent;
+    private MedicalRecordCreatedEvent medicalRecordCreatedEvent;
 }

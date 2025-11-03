@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Registro Médico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 650px;
+            background-color: #ffffff;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .info-block {
+            background-color: #f0f8ff;
+            border-left: 4px solid #007bff;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        p {
+            margin: 5px 0;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        strong {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Nuevo Registro Médico</h1>
+    <p>Hola, <strong th:text="${patientName}"></strong>.</p>
+    <br>
+    <p>Se ha creado un nuevo registro médico asociado a tu cita con el Dr./Dra. <strong th:text="${doctorName}"></strong>.</p>
+
+    <div class="info-block">
+        <p><strong>Fecha del registro:</strong> <span th:text="${createdDate}"></span></p>
+        <p><strong>ID de cita:</strong> <span th:text="${appointmentId}"></span></p>
+        <p><strong>Peso:</strong> <span th:text="${weight} + ' kg'"></span></p>
+        <p><strong>Altura:</strong> <span th:text="${height} + ' cm'"></span></p>
+        <p><strong>Tipo de sangre:</strong> <span th:text="${bloodType}"></span></p>
+        <p><strong>Alergias:</strong> <span th:text="${allergies} ?: 'Ninguna registrada'"></span></p>
+        <p><strong>Enfermedades crónicas:</strong> <span th:text="${chronicDiseases} ?: 'No registradas'"></span></p>
+        <p><strong>Tratamientos:</strong> <span th:text="${medications} ?: 'No registrados'"></span></p>
+        <p><strong>Diagnóstico:</strong> <span th:text="${diagnostic}"></span></p>
+    </div>
+
+    <p>Este registro forma parte de tu historial médico. Puedes revisarlo desde tu portal del paciente.</p>
+
+    <div class="footer">
+        © 2025 PatientApp - Registro Médico Automático
+    </div>
+</div>
+</body>
+</html>
